@@ -8,6 +8,7 @@
  * @author 	Cláudio Esperança <claudio.esperanca@ipleiria.pt>
  * @license	{@link http://www.gnu.org/copyleft/gpl.html |  GNU GPL v3 or later}
  *
+ * 
  * @author         $Author$
  * @copyright      $Copyright$
  * @version        $Rev$
