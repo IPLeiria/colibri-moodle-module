@@ -1,0 +1,56 @@
+<?php
+/**
+ * Global configuration page for the Colibri module definitions
+ *
+ * @package    	Colibri
+ * @subpackage 	local_colibri
+ * @version	2011.0
+ * @copyright 	Learning Distance Unit {@link http://ued.ipleiria.pt} - Polytechnic Institute of Leiria
+ * @author 	Cláudio Esperança <claudio.esperanca@ipleiria.pt>
+ * @license	http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+require_once(dirname(__FILE__) . '/../../../config.php');
+require_once($CFG->libdir.'/adminlib.php');
+require_once(dirname(__FILE__) . '/forms/colibri_setup_form.php');
+require_once($CFG->dirroot.'/local/colibri/lib.php');
+
+admin_externalpage_setup('colibri_config');
+
+global $USER;
+
+// verify the user capabilities
+$systemcontext = get_context_instance(CONTEXT_SYSTEM);
+if(!has_capability('local/colibri:configureplugin', $systemcontext, $USER) && !is_siteadmin($USER)):
+    print_error('insuficientPermissionsToConfigureTheColibriPlugin', EU4ALLMODULENAME);
+endif;
+
+// instanciate the form
+$form = new colibri_setup_form();
+
+// Display the settings form.
+echo $OUTPUT->header();
+echo $OUTPUT->heading(get_string('colibriConfiguration', COLIBRI_PLUGINNAME));
+
+$data = $form->get_data();
+if ($data):
+    try{
+        if(isset($data->colibri_wsdl_url)):
+            set_config('colibri_wsdl_url', $data->colibri_wsdl_url, COLIBRI_PLUGINNAME);
+        endif;
+        if(isset($data->colibri_installation_identifier)):
+            set_config('colibri_installation_identifier', $data->colibri_installation_identifier, COLIBRI_PLUGINNAME);
+        endif;
+        if(isset($data->colibri_installation_password)):
+            set_config('colibri_installation_password', $data->colibri_installation_password, COLIBRI_PLUGINNAME);
+        endif;
+
+        echo($OUTPUT->notification(get_string('colibriSettingsSaved', COLIBRI_PLUGINNAME), 'notifysuccess'));
+    }catch(Exception $ex){
+        echo($OUTPUT->notification(get_string('colibriErrorSavingSettings', COLIBRI_PLUGINNAME, $ex->getMessage()), 'notifyproblem'));
+    }
+endif;
+
+$form->display();
+
+echo $OUTPUT->footer();
