@@ -48,13 +48,23 @@ class ColibriService_test extends UnitTestCase {
         //getColibriTime
         echo("getColibriTime: <pre>".print_r(ColibriService::getColibriTime(), true)."</pre>");
 
+        // createSession
+        $result = ColibriService::createSession("teste", time()+3600, time()+2*3600, 10);
+        echo("createSession: <pre>".print_r($result, true)."</pre>");
+        
         // getSessionInfo
         $result = ColibriService::getSessionInfo(6099);
         echo("getSessionInfo: <pre>".print_r($result, true)."</pre>");
 
-        // createSession
-        $result = ColibriService::createSession("teste", time()+3600, time()+2*3600, 10);
-        echo("createSession: <pre>".print_r($result, true)."</pre>");
+        // modifySession
+        $result = ColibriService::modifySession(10, "teste2", time()+3600, time()+2*3600, 10);
+        echo("modifySession: <pre>".print_r($result, true)."</pre>");
+
+        /*
+        // removeSession
+        $result = ColibriService::removeSession(10);
+        echo("removeSession: <pre>".print_r($result, true)."</pre>");
+        */
 
 
 

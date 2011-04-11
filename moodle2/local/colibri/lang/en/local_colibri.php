@@ -36,7 +36,8 @@ $string['invalidStartDate'] = 'The session start date is invalid';
 $string['invalidEndDate'] = 'The session end date is invalid';
 $string['invalidNumberOfParticipants'] = 'The of participants provided is invalid (the session must have participants!)';
 $string['createSessionFailed'] = 'Unable to create the session on the Colibri server';
-
+$string['modifySessionFailed'] = 'Unable to modify the session {$a} on the Colibri server';
+$string['removeSessionFailed'] = 'Unable to remove the session {$a} from the Colibri server';
 $string['getSessionInfoFailed'] = 'Unable to get the time from the Colibri server';
 
 
