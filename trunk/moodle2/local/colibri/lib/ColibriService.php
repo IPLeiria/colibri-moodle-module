@@ -276,13 +276,15 @@ class ColibriService{
      * Returns a localized string from the module language pack
      *
      * @param $message string with the string message
+     * @param string|object|array $a An object, string or number that can be used within translation strings
      * @param $module string with the module name
      * @return String from the language pack
      * @uses get_string to get a localized string
+     * 
      * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
      */
-    public static function getString($message=NULL, $module=COLIBRI_PLUGINNAME){
-        return get_string($message, $module);
+    public static function getString($message=NULL, $a = NULL, $module=COLIBRI_PLUGINNAME){
+        return get_string($message, $module, $a);
     }
 
 
@@ -339,6 +341,7 @@ class ColibriService{
             $params = array(
                 'accessCredentials'=>ColibriService::getCredentials(),
                 'sessionInfo'=>array(
+                    'name'=>$name,
                     'startDateTimeStamp'=>$startDateTimeStamp,
                     'endDateTimeStamp'=>$endDateTimeStamp,
                     'maxSessionUsers'=>$maxSessionUsers,
@@ -348,7 +351,7 @@ class ColibriService{
                 )
             );
 
-            // call the methods
+            // call the method
             $result = $client->createSession($params);
 
             if(isset($result->return) && $result->return->sucess):
@@ -368,6 +371,145 @@ class ColibriService{
         }
         return self::GENERIC_ERROR;
     }
+
+    /**
+     * Modifies a session on the system
+     *
+     * @param <int> $sessionId
+     * @param <String> $name
+     * @param <int> $startDateTimeStamp
+     * @param <int> $endDateTimeStamp
+     * @param <int> $maxSessionUsers
+     * @param <int> $sessionPin
+     * @param <int> $moderationPin
+     * @param <Boolean> $listPubliclyInColibri
+     * @return <sessionResult>
+     *
+     * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
+     */// @TODO add the sessionId to modify
+    public static function modifySession($sessionId, $name, $startDateTimeStamp, $endDateTimeStamp, $maxSessionUsers=0, $sessionPin=NULL, $moderationPin=NULL, $listPubliclyInColibri=false){
+        try{
+            $client = self::getSoapClientInstance();
+
+            // checks for a valid client
+            if(is_null($client)):
+                self::_log(self::getString('unableToCreateSoapClientInstance'), __FUNCTION__);
+                return self::SOAP_INSTANCE_ERROR;
+            endif;
+
+            // check the start date value
+            if(!is_numeric($startDateTimeStamp) || (int)$startDateTimeStamp<time()):
+                self::_log(self::getString('invalidStartDate'), __FUNCTION__);
+                return self::INVALID_START_DATE;
+            endif;
+
+            // check end date value
+            if(!is_numeric($endDateTimeStamp) || (int)$endDateTimeStamp<$startDateTimeStamp):
+                self::_log(self::getString('invalidEndDate'), __FUNCTION__);
+                return self::INVALID_END_DATE;
+            endif;
+
+            // check the number of participants
+            if($maxSessionUsers<=0):
+                self::_log(self::getString('invalidNumberOfParticipants'), __FUNCTION__);
+                return self::INVALID_NUMBER_OF_PARTICIPANTS;
+            endif;
+
+            // generate a session pin if needed
+            $sessionPin = is_null($sessionPin)?substr(mt_rand(10000,19999),1):$sessionPin;
+            // generate a moderation pin if needed
+            $moderationPin = is_null($moderationPin)?substr(mt_rand(10000,19999),1):$moderationPin;
+
+            // method parameters
+            $params = array(
+                'accessCredentials'=>ColibriService::getCredentials(),
+                'sessionInfo'=>array(
+                    'sessionId'=>$sessionId,
+                    'name'=>$name,
+                    'startDateTimeStamp'=>$startDateTimeStamp,
+                    'endDateTimeStamp'=>$endDateTimeStamp,
+                    'maxSessionUsers'=>$maxSessionUsers,
+                    'listPubliclyInColibri'=>$listPubliclyInColibri,
+                    'moderationPin'=>$moderationPin,
+                    'sessionPin'=>$sessionPin
+                )
+            );
+
+            // call the method
+            $result = $client->modifySession($params);
+
+            if(isset($result->return) && $result->return->sucess):
+                return $result->return;
+            else:
+                throw new Exception(self::getString('invalidMethodResponse').(isset($result->return)?" {$result->return->resultMessage}":''));
+                return ERROR_ON_METHOD_RESPONSE;
+            endif;
+
+        }catch(SoapFault $fault){
+            $extra = (isset($fault->detail->ServiceFault->MessageError)?$fault->detail->ServiceFault->MessageError:'');
+            self::_log(self::getString('modifySessionFailed', $sessionId)." ({$fault->getMessage()}".(!empty($extra)?": $extra":'').")", __FUNCTION__."@".$fault->getLine());
+            return self::SOAP_FAULT;
+        }catch(Exception $ex){
+            self::_log(self::getString('modifySessionFailed', $sessionId)." (".$ex->getMessage().")", __FUNCTION__."@".$ex->getLine());
+            return self::EXCEPTION;
+        }
+        return self::GENERIC_ERROR;
+    }
+
+    /**
+     * Removes a session on the system
+     *
+     * @param <int> $sessionId
+     * @param <String> $name
+     * @param <int> $startDateTimeStamp
+     * @param <int> $endDateTimeStamp
+     * @param <int> $maxSessionUsers
+     * @param <int> $sessionPin
+     * @param <int> $moderationPin
+     * @param <Boolean> $listPubliclyInColibri
+     * @return <sessionResult>
+     *
+     * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
+     */// @TODO remove all the junk and use only the sessionId to remove
+    public static function removeSession($sessionId){
+        try{
+            $client = self::getSoapClientInstance();
+
+            // checks for a valid client
+            if(is_null($client)):
+                self::_log(self::getString('unableToCreateSoapClientInstance'), __FUNCTION__);
+                return self::SOAP_INSTANCE_ERROR;
+            endif;
+            
+            // method parameters
+            $params = array(
+                'accessCredentials'=>ColibriService::getCredentials(),
+                'sessionInfo'=>array(
+                    'sessionId'=>$sessionId
+                )
+            );
+
+            // call the method
+            $result = $client->removeSession($params);
+
+            if(isset($result->return) && $result->return->sucess):
+                return $result->return;
+            else:
+                throw new Exception(self::getString('invalidMethodResponse').(isset($result->return)?" {$result->return->resultMessage}":''));
+                return ERROR_ON_METHOD_RESPONSE;
+            endif;
+
+        }catch(SoapFault $fault){
+            $extra = (isset($fault->detail->ServiceFault->MessageError)?$fault->detail->ServiceFault->MessageError:'');
+            self::_log(self::getString('removeSessionFailed', $sessionId)." ({$fault->getMessage()}".(!empty($extra)?": $extra":'').")", __FUNCTION__."@".$fault->getLine());
+            return self::SOAP_FAULT;
+        }catch(Exception $ex){
+            self::_log(self::getString('removeSessionFailed', $sessionId)." (".$ex->getMessage().")", __FUNCTION__."@".$ex->getLine());
+            return self::EXCEPTION;
+        }
+        return self::GENERIC_ERROR;
+    }
+
     /**
      * Returns the session information about a session
      *
