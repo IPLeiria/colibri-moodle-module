@@ -1,4 +1,19 @@
 <?php
+/**
+ * Class library for the Colibri webservice communication
+ *
+ * @package    	Colibri
+ * @subpackage 	local_colibri
+ * @copyright 	{@link http://ued.ipleiria.pt | Learning Distance Unit } - Polytechnic Institute of Leiria
+ * @author 	Cláudio Esperança <claudio.esperanca@ipleiria.pt>
+ * @license	{@link http://www.gnu.org/copyleft/gpl.html |  GNU GPL v3 or later}
+ *
+ * SVN:
+ * $Author$
+ * $Date$
+ * $Rev$
+ */
+
 // Set the soap types directory
 if(!defined('COLIBRI_SOAPTYPES_DIR')):
     define('COLIBRI_SOAPTYPES_DIR', dirname(__FILE__) . '/soaptypes/');
