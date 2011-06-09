@@ -4,8 +4,7 @@
  *
  * @package    	Colibri
  * @subpackage 	local_colibri
- * @copyright 	{@link http://ued.ipleiria.pt | Learning Distance Unit } - Polytechnic Institute of Leiria
- * @author 	Cláudio Esperança <claudio.esperanca@ipleiria.pt>
+ * @author 	Cláudio Esperança <claudio.esperanca@ipleiria.pt> - {@link http://ued.ipleiria.pt | Learning Distance Unit }, Polytechnic Institute of Leiria
  * @license	{@link http://www.gnu.org/copyleft/gpl.html |  GNU GPL v3 or later}
  *
  * SVN:
