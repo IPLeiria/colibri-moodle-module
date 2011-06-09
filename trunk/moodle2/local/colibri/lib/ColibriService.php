@@ -1,11 +1,10 @@
 <?php
 /**
- * Class library for the Colibri webservice communication
+ * Classes library for the Colibri webservice communication
  *
  * @package    	Colibri
  * @subpackage 	local_colibri
- * @copyright 	{@link http://ued.ipleiria.pt | Learning Distance Unit } - Polytechnic Institute of Leiria
- * @author 	Cláudio Esperança <claudio.esperanca@ipleiria.pt>
+ * @author 	Cláudio Esperança <claudio.esperanca@ipleiria.pt> - {@link http://ued.ipleiria.pt | Learning Distance Unit }, Polytechnic Institute of Leiria
  * @license	{@link http://www.gnu.org/copyleft/gpl.html |  GNU GPL v3 or later}
  *
  * SVN:
@@ -31,15 +30,10 @@ spl_autoload_register(array('ColibriService', 'autoload'));
  * @package    	Colibri
  * @subpackage 	local_colibri
  * @version	2011.0
- * @copyright 	Learning Distance Unit {@link http://ued.ipleiria.pt} - Polytechnic Institute of Leiria
- * @author 	Cláudio Esperança <claudio.esperanca@ipleiria.pt>
+ * @author 	Cláudio Esperança <claudio.esperanca@ipleiria.pt> - {@link http://ued.ipleiria.pt | Learning Distance Unit }, Polytechnic Institute of Leiria
  * @license	http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class ColibriService{
-    private static $_soapClient = NULL;
-    private static $_url = NULL;
-    private static $_accessCredentials;
-
     // constants
     const GENERIC_ERROR = -1;
     const SOAP_INSTANCE_ERROR = -2;
@@ -49,12 +43,45 @@ class ColibriService{
     const INVALID_END_DATE = -6;
     const INVALID_NUMBER_OF_PARTICIPANTS = -7;
     const ERROR_ON_METHOD_RESPONSE = -8;
+    const INVALID_ACCESS_CREDENTIALS = -9;
+    const MISSING_ACCESS_CREDENTIALS = -10;
+    const UNKOWN_ERROR = -11;
+    const COULD_NOT_CREATE_SESSION = -12;
+    const MISSING_SESSION_NAME = -13;
+    const SESSION_START_TIME_GREATER_THAN_ENDTIME = -14;
+    const COULD_NOT_GET_SESSION_INFO = -15;
+
+
 
     /**
-     * We will be using a private constructor for single SoapClient instance reuse
+     * @var <array> with the class constants names
+     */
+    private static $_classConstants = NULL;
+
+    /**
+     * @var <SoapClient> with the client instance to (re)use
+     */
+    private static $_soapClient = NULL;
+    
+    /**
+     * @var <String> with the webservice URL
+     */
+    private static $_url = NULL;
+
+    /**
+     * @var <accessCredentials> to use for the authentication with the webservice
+     */
+    private static $_accessCredentials;
+
+
+    /**
+     * We will be using a private constructor for single SoapClient instance (re)use
      *
      * @param $wsdl with the service URL to use on the SoapClient link
      * @uses global $CFG for the proxy settings
+     * @uses get_config() to load configurations from Moodle
+     * @uses get_string() to get localized strings
+     * 
      * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
      */
     private function __construct($wsdl=NULL){
@@ -219,6 +246,7 @@ class ColibriService{
      * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
      */
     private static function getCredentials(){
+	self::getSoapClientInstance(); // Just in case, to define the $_accessCredentials
         return self::$_accessCredentials;
     }
 
@@ -284,7 +312,120 @@ class ColibriService{
      * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
      */
     public static function getString($message=NULL, $a = NULL, $module=COLIBRI_PLUGINNAME){
-        return get_string($message, $module, $a);
+	if(!empty ($message)):
+	    return get_string($message, $module, $a);
+	endif;
+	return '';
+    }
+
+    /**
+     * Get the class constants names
+     * 
+     * @return <array>
+     */
+    private static function getClassConstants(){
+	if(is_null(self::$_classConstants)){
+	    $oClass = new ReflectionClass(__CLASS__);
+	    self::$_classConstants = $oClass->getConstants();
+	}
+	return self::$_classConstants;
+    }
+
+    /*
+     * Returns a numeric error code from the given string
+     *
+     * @param $errorString string with the original remote error message
+     * @return int with the error code if found
+     *
+     * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
+     */
+    public static function getErrorCode($errorString){
+	self::getClassConstants();
+	return (!empty(self::$_classConstants[$errorString])?self::$_classConstants[$errorString]:self::UNKOWN_ERROR);
+    }
+
+    /*
+     * Returns the constant name string with the specified code
+     *
+     * @param $errorCode int error code
+     * @return String with the constant name, false if the errorcode wasn't found
+     *
+     * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
+     */
+    public static function getErrorConstantName($errorCode){
+	$_classConstants = self::getClassConstants();
+	foreach($_classConstants as $constant=>$value):
+	    if($value==$errorCode):
+		return $constant;
+	    endif;
+	endforeach;
+	return false;
+    }
+
+    /*
+     * Returns the error string for the specified code
+     *
+     * @param $errorCode int error code
+     * @return String with the error string
+     * @uses get_string() to get localized strings
+     *
+     * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
+     */
+    public static function getErrorString($errorCode){
+	$string = self::getErrorConstantName($errorCode);
+	if(empty ($string)):
+	    $string = self::getErrorConstantName(self::UNKOWN_ERROR);
+	endif;
+	return self::getString($string, $errorCode);
+    }
+
+    /**
+     * Verify if the credentials have access to the service
+     *
+     * @param $credentials optional accessCredentials with the credentials to check
+     * @return String from the language pack
+     * @uses get_string to get a localized string
+     *
+     * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
+     */
+    public static function checkAccess($credentials=NULL){
+	try{
+            $client = self::getSoapClientInstance();
+
+            // checks for a valid client
+            if(is_null($client)):
+                self::_log(self::getString('unableToCreateSoapClientInstance'), __FUNCTION__);
+                return self::SOAP_INSTANCE_ERROR;
+            endif;
+	    
+            // method parameters
+            $params = array(
+		'accessCredentials'=>(empty($credentials)?ColibriService::getCredentials():$credentials)
+	    );
+	    
+            // call the method
+            $result = $client->checkAccess($params);
+
+            if(isset($result->return) && isset($result->return->sucess)):
+		if($result->return->sucess):
+		    return true;
+		else:
+		    self::_log(self::getString('errorReturned', self::getString($result->return->resultMessage, $result->return->resultMessage)), __FUNCTION__."@".__LINE__);
+		    return self::getErrorCode($result->return->resultMessage);
+		endif;
+            else:
+                throw new Exception(self::getString('invalidMethodResponse').(isset($result->return)?" {$result->return->resultMessage}":''));
+                return ERROR_ON_METHOD_RESPONSE;
+            endif;
+        }catch(SoapFault $fault){
+            $extra = (isset($fault->detail->ServiceFault->MessageError)?$fault->detail->ServiceFault->MessageError:'');
+            self::_log(self::getString('checkAccessFailed')." ({$fault->getMessage()}".(!empty($extra)?": $extra":'').")", __FUNCTION__."@".$fault->getLine());
+            return self::SOAP_FAULT;
+        }catch(Exception $ex){
+            self::_log(self::getString('checkAccessFailed')." (".$ex->getMessage().")", __FUNCTION__."@".$ex->getLine());
+            return self::EXCEPTION;
+        }
+        return self::GENERIC_ERROR;
     }
 
 
@@ -354,8 +495,16 @@ class ColibriService{
             // call the method
             $result = $client->createSession($params);
 
-            if(isset($result->return) && $result->return->sucess):
-                return $result->return;
+	    //echo('Last request: <pre>'.print_r($client->__getLastRequest(), true).'</pre>');
+	    //echo('Last response: <pre>'.print_r($client->__getLastResponse(), true).'</pre>');
+	    
+            if(isset($result->return) && isset($result->return->sucess)):
+		if($result->return->sucess):
+		    return $result->return;
+		else:
+		    self::_log(self::getString('errorReturned', self::getString($result->return->resultMessage, $result->return->resultMessage)), __FUNCTION__."@".__LINE__);
+		    return self::getErrorCode($result->return->resultMessage);
+		endif;
             else:
                 throw new Exception(self::getString('invalidMethodResponse').(isset($result->return)?" {$result->return->resultMessage}":''));
                 return ERROR_ON_METHOD_RESPONSE;
@@ -438,8 +587,14 @@ class ColibriService{
             // call the method
             $result = $client->modifySession($params);
 
-            if(isset($result->return) && $result->return->sucess):
-                return $result->return;
+	    // check the result
+            if(isset($result->return) && isset($result->return->sucess)):
+                if($result->return->sucess):
+		    return $result->return;
+		else:
+		    self::_log(self::getString('errorReturned', self::getString($result->return->resultMessage, $result->return->resultMessage)), __FUNCTION__."@".__LINE__);
+		    return self::getErrorCode($result->return->resultMessage);
+		endif;
             else:
                 throw new Exception(self::getString('invalidMethodResponse').(isset($result->return)?" {$result->return->resultMessage}":''));
                 return ERROR_ON_METHOD_RESPONSE;
@@ -492,8 +647,13 @@ class ColibriService{
             // call the method
             $result = $client->removeSession($params);
 
-            if(isset($result->return) && $result->return->sucess):
-                return $result->return;
+            if(isset($result->return) && isset($result->return->sucess)):
+                if($result->return->sucess):
+		    return true;
+		else:
+		    self::_log(self::getString('errorReturned', self::getString($result->return->resultMessage, $result->return->resultMessage)), __FUNCTION__."@".__LINE__);
+		    return self::getErrorCode($result->return->resultMessage);
+		endif;
             else:
                 throw new Exception(self::getString('invalidMethodResponse').(isset($result->return)?" {$result->return->resultMessage}":''));
                 return ERROR_ON_METHOD_RESPONSE;
@@ -533,7 +693,17 @@ class ColibriService{
             );
 
             $result = $client->getSessionInfo($params);
-            return $result->return;
+            if(isset($result->return) && isset($result->return->sucess)):
+		if($result->return->sucess):
+		    return $result->return;
+		else:
+		    self::_log(self::getString('errorReturned', self::getString($result->return->resultMessage, $result->return->resultMessage)), __FUNCTION__."@".__LINE__);
+		    return self::getErrorCode($result->return->resultMessage);
+		endif;
+            else:
+                throw new Exception(self::getString('invalidMethodResponse').(isset($result->return)?" {$result->return->resultMessage}":''));
+                return ERROR_ON_METHOD_RESPONSE;
+            endif;
 
         }catch(SoapFault $fault){
             $extra = (isset($fault->detail->ServiceFault->MessageError)?$fault->detail->ServiceFault->MessageError:'');

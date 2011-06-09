@@ -4,8 +4,7 @@
  *
  * @package    	Colibri
  * @subpackage 	local_colibri
- * @copyright 	{@link http://ued.ipleiria.pt | Learning Distance Unit } - Polytechnic Institute of Leiria
- * @author 	Cláudio Esperança <claudio.esperanca@ipleiria.pt>
+ * @author 	Cláudio Esperança <claudio.esperanca@ipleiria.pt> - {@link http://ued.ipleiria.pt | Learning Distance Unit }, Polytechnic Institute of Leiria
  * @license	{@link http://www.gnu.org/copyleft/gpl.html |  GNU GPL v3 or later}
  *
  * SVN:
@@ -32,6 +31,8 @@ $string['getSoapTypesFailed'] = 'Não foi possível obter a lista de tipos SOAP 
 $string['getSoapFunctionsFailed'] = 'Não foi possível obter a lista de métodos SOAP do servidor Colibri';
 $string['getColibriTimeFailed'] = 'Não foi possível obter a data do servidor Colibri';
 
+$string['checkAccessFailed'] = 'Não foi possível validar as credenciais no servidor Colibri';
+
 $string['invalidStartDate'] = 'A data de inicio da sessão é inválida';
 $string['invalidEndDate'] = 'A data de fim da sessão é inválida';
 $string['invalidNumberOfParticipants'] = 'O número de participantes é inválido (a sessão deve ter participantes!)';
@@ -40,7 +41,22 @@ $string['modifySessionFailed'] = 'Não foi possível modificar a sessão {$a} no
 $string['removeSessionFailed'] = 'Não foi possível remover a sessão {$a} do servidor Colibri';
 $string['getSessionInfoFailed'] = 'Não foi possível obter informações sobre a sessão no servidor Colibri server';
 
-
+$string['errorReturned'] = 'Ocorreu um erro ({$a})';
+$string['GENERIC_ERROR'] = 'Erro: {$a}';
+$string['SOAP_INSTANCE_ERROR'] = 'Erro na instância do cliente SOAP';
+$string['SOAP_FAULT'] = 'Erro de SOAP';
+$string['EXCEPTION'] = 'Ocorreu uma excepção';
+$string['INVALID_START_DATE'] = 'Data de inicio inválida';
+$string['INVALID_END_DATE'] = 'Data de fim inválida';
+$string['INVALID_NUMBER_OF_PARTICIPANTS'] = 'Número de participantes inválido';
+$string['ERROR_ON_METHOD_RESPONSE'] = 'Erro na resposta do método remoto';
+$string['INVALID_ACCESS_CREDENTIALS'] = 'As credenciais são inválidas';
+$string['MISSING_ACCESS_CREDENTIALS'] = 'As credenciais não foram enviadas no pedido';
+$string['UNKOWN_ERROR'] = 'Erro desconhecido: {$a}';
+$string['COULD_NOT_CREATE_SESSION'] = 'Não foi possível criar a sessão';
+$string['MISSING_SESSION_NAME'] = 'O nome da sessão não se encontra definido';
+$string['SESSION_START_TIME_GREATER_THAN_ENDTIME'] = 'A data de inicio é superior ou igual à data de fim';
+$string['COULD_NOT_GET_SESSION_INFO'] = 'Não foi possivel obter informações sobre a sessão';
 
 // settings menu
 $string['colibri'] = 'Colibri';

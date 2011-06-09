@@ -4,8 +4,7 @@
  *
  * @package    	Colibri
  * @subpackage 	local_colibri
- * @copyright 	{@link http://ued.ipleiria.pt | Learning Distance Unit } - Polytechnic Institute of Leiria
- * @author 	Cláudio Esperança <claudio.esperanca@ipleiria.pt>
+ * @author 	Cláudio Esperança <claudio.esperanca@ipleiria.pt> - {@link http://ued.ipleiria.pt | Learning Distance Unit }, Polytechnic Institute of Leiria
  * @license	{@link http://www.gnu.org/copyleft/gpl.html |  GNU GPL v3 or later}
  *
  * SVN:
@@ -32,6 +31,8 @@ $string['getSoapTypesFailed'] = 'Unable to get the SOAP types from the Colibri s
 $string['getSoapFunctionsFailed'] = 'Unable to get the SOAP methods from the Colibri server';
 $string['getColibriTimeFailed'] = 'Unable to get the time from the Colibri server';
 
+$string['checkAccessFailed'] = 'Unable to create the check the credentials on the Colibri server';
+
 $string['invalidStartDate'] = 'The session start date is invalid';
 $string['invalidEndDate'] = 'The session end date is invalid';
 $string['invalidNumberOfParticipants'] = 'The of participants provided is invalid (the session must have participants!)';
@@ -40,6 +41,22 @@ $string['modifySessionFailed'] = 'Unable to modify the session {$a} on the Colib
 $string['removeSessionFailed'] = 'Unable to remove the session {$a} from the Colibri server';
 $string['getSessionInfoFailed'] = 'Unable to get the time from the Colibri server';
 
+$string['errorReturned'] = 'An error occurred ({$a})';
+$string['GENERIC_ERROR'] = 'Error: {$a}';
+$string['SOAP_INSTANCE_ERROR'] = 'Error on the SOAP client instance';
+$string['SOAP_FAULT'] = 'SOAP error';
+$string['EXCEPTION'] = 'Exception occurred';
+$string['INVALID_START_DATE'] = 'Invalid start date';
+$string['INVALID_END_DATE'] = 'Invalid end date';
+$string['INVALID_NUMBER_OF_PARTICIPANTS'] = 'Invalid number of participants';
+$string['ERROR_ON_METHOD_RESPONSE'] = 'Error on the remote method response';
+$string['INVALID_ACCESS_CREDENTIALS'] = 'The credentials are invalid';
+$string['MISSING_ACCESS_CREDENTIALS'] = 'The credentials are missing on the request';
+$string['UNKOWN_ERROR'] = 'Unkown error: {$a}';
+$string['COULD_NOT_CREATE_SESSION'] = 'Unable to create the session';
+$string['MISSING_SESSION_NAME'] = 'Session name is not defined';
+$string['SESSION_START_TIME_GREATER_THAN_ENDTIME'] = 'Start time is greater than end time';
+$string['COULD_NOT_GET_SESSION_INFO'] = 'Unable to get the session info';
 
 
 // settings menu
