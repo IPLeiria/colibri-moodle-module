@@ -14,14 +14,17 @@
  * $Rev$
  */
 
+defined('MOODLE_INTERNAL') || die();
+
+// Capability to configure the plugin
 $capabilities = array(
-	'local/colibri:configureplugin' => array(
-		'captype' => 'write',
-		'contextlevel' => CONTEXT_MODULE,
-		'archetypes' => array(
-			'guest' => CAP_PROHIBIT,
-			'user' => CAP_PROHIBIT,
-			'manager' => CAP_PROHIBIT
-		)
-	),
+    'local/colibri:configureplugin' => array(
+	'captype' => 'write',
+	'contextlevel' => CONTEXT_MODULE,
+	'archetypes' => array(
+	    'guest' => CAP_PROHIBIT,
+	    'user' => CAP_PROHIBIT,
+	    'manager' => CAP_PROHIBIT
+	)
+    ),
 );

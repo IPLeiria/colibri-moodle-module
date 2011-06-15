@@ -13,7 +13,8 @@
  * $Rev$
  */
 
-$string['pluginname'] = 'EU4ALL';
+$string['pluginname'] = 'Colibri';
+$string['local_colibri'] = $string['pluginname'];
 
 
 //Capabilities
@@ -57,6 +58,7 @@ $string['COULD_NOT_CREATE_SESSION'] = 'Unable to create the session';
 $string['MISSING_SESSION_NAME'] = 'Session name is not defined';
 $string['SESSION_START_TIME_GREATER_THAN_ENDTIME'] = 'Start time is greater than end time';
 $string['COULD_NOT_GET_SESSION_INFO'] = 'Unable to get the session info';
+$string['INSUFFICIENT_PERMISSIONS'] = 'Insufficient permissions';
 
 
 // settings menu
