@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="mod/colibri/db" VERSION="20110613" COMMENT="XMLDB file for Moodle mod/colibri"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="colibri_sessions" COMMENT="Table to store the Colibri sessions information" NEXT="colibri_sessions_users">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="course"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="ID of the parent course" PREVIOUS="id" NEXT="sessionuniqueid"/>
+        <FIELD NAME="sessionuniqueid" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="The session unique identifier" PREVIOUS="course" NEXT="sessionnumber"/>
+        <FIELD NAME="sessionnumber" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The session number to access the session" PREVIOUS="sessionuniqueid" NEXT="name"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="The name of the resource" PREVIOUS="sessionnumber" NEXT="moderationpin"/>
+        <FIELD NAME="moderationpin" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The moderation pin" PREVIOUS="name" NEXT="sessionpin"/>
+        <FIELD NAME="sessionpin" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The session pin" PREVIOUS="moderationpin" NEXT="startdate"/>
+        <FIELD NAME="startdate" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The time stamp of the beginning of the session" PREVIOUS="sessionpin" NEXT="enddate"/>
+        <FIELD NAME="enddate" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The time stamp of the end of the session" PREVIOUS="startdate" NEXT="maxsessionusers"/>
+        <FIELD NAME="maxsessionusers" TYPE="int" LENGTH="5" NOTNULL="true" UNSIGNED="true" DEFAULT="20" SEQUENCE="false" COMMENT="The maximum number of session users" PREVIOUS="enddate" NEXT="listpubliclyoncolibri"/>
+        <FIELD NAME="listpubliclyoncolibri" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Show the session of the public session list on the Colibri website?" PREVIOUS="maxsessionusers" NEXT="state"/>
+        <FIELD NAME="state" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The state of the session (0=scheduled; 1=running; 2=ended)" PREVIOUS="listpubliclyoncolibri" NEXT="creatorid"/>
+        <FIELD NAME="creatorid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The identifier of the session creator" PREVIOUS="state" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The timestamp when the module was modified" PREVIOUS="creatorid" NEXT="intro"/>
+        <FIELD NAME="intro" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" COMMENT="The introduction or description of the activity" PREVIOUS="timemodified" NEXT="introformat"/>
+        <FIELD NAME="introformat" TYPE="int" LENGTH="3" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The format of the intro field" PREVIOUS="intro"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="course_fk"/>
+        <KEY NAME="course_fk" TYPE="foreign-unique" FIELDS="course" REFTABLE="course" REFFIELDS="id" COMMENT="The course foreign key" PREVIOUS="primary" NEXT="creatorid_fk"/>
+        <KEY NAME="creatorid_fk" TYPE="foreign" FIELDS="creatorid" REFTABLE="user" REFFIELDS="id" PREVIOUS="course_fk"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="colibri_sessions_users" COMMENT="Table for registering the attendees of colibri sessions" PREVIOUS="colibri_sessions">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="colibrisessionid"/>
+        <FIELD NAME="colibrisessionid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The Colibri Session identifier" PREVIOUS="id" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The user identifier" PREVIOUS="colibrisessionid" NEXT="type"/>
+        <FIELD NAME="type" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Participation type (0=attendee; 1=moderator)" PREVIOUS="userid" NEXT="reservedbyid"/>
+        <FIELD NAME="reservedbyid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" COMMENT="The identifier of the user that reserved the seat for the user" PREVIOUS="type" NEXT="accessed"/>
+        <FIELD NAME="accessed" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" COMMENT="Time stamp of the last access" PREVIOUS="reservedbyid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="colibrisession_fk"/>
+        <KEY NAME="colibrisession_fk" TYPE="foreign" FIELDS="colibrisessionid" REFTABLE="colibrisession" REFFIELDS="id" PREVIOUS="primary" NEXT="user_fk"/>
+        <KEY NAME="user_fk" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" PREVIOUS="colibrisession_fk" NEXT="reservedbyid_fk"/>
+        <KEY NAME="reservedbyid_fk" TYPE="foreign" FIELDS="reservedbyid" REFTABLE="user" REFFIELDS="id" PREVIOUS="user_fk"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>
