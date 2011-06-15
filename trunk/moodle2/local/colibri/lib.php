@@ -35,3 +35,6 @@ spl_autoload_register(function($className){
     endif;
 });
 
+// Load the service class of the Colibri module
+require_once($CFG->dirroot.'/mod/colibri/locallib.php');
+

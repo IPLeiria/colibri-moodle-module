@@ -54,8 +54,10 @@ class ColibriService_test extends UnitTestCase {
 	$acc = new accessCredentials();
 	$acc->installId = 'xpto';
 	$acc->password = 'e uma senha que não deve existir'.uniqid();
+	
 	$this->assertFalse(ColibriService::checkAccess($acc)===true);
 	$this->assertTrue(ColibriService::checkAccess()===true);
+	
     }
 
     // TODO remove this method when done
@@ -66,11 +68,19 @@ class ColibriService_test extends UnitTestCase {
 	
 	// createSession
 	$result = ColibriService::createSession("teste", time() + 60, time() + 2 * 3600, 10, 1234, 4321, true);
-	echo("createSession: <pre>" . print_r($result, true) . "</pre>");
+	if(is_integer($result) && $result<0){
+	    echo( "<pre>createSession: ".ColibriService::getErrorString($result)."</pre>");
+	}else{
+	    echo("createSession: <pre>" . print_r($result, true) . "</pre>");
+	}
 
 	// getSessionInfo
-	$result = ColibriService::getSessionInfo(6099);
-	echo("getSessionInfo: <pre>" . print_r($result, true) . "</pre>");
+	$result =ColibriService::getSessionInfo(6099);
+	if(is_integer($result) && $result<0){
+	    echo( "<pre>getSessionInfo: ".ColibriService::getErrorString($result)."</pre>");
+	}else{
+	    echo("getSessionInfo: <pre>" . print_r($result, true) . "</pre>");
+	}
 
 	/*
 	// getSessionInfo
