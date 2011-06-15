@@ -1,4 +1,5 @@
 <?php
+
 class sessionResult{
     /**
      * @var int
@@ -60,6 +61,10 @@ class sessionResult{
      * @var int
      */
     public $sessionStatus;
+    /**
+     * @var string
+     */
+    public $sessionUniqueID;
     /**
      * @var string
      */
