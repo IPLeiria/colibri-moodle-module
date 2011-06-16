@@ -6,7 +6,7 @@ class getSessionInfo{
     public $accessCredentials;
     
     /**
-     * @var int
+     * @var string
      */
-    public $sessionInfo;
+    public $sessionUniqueID;
 }

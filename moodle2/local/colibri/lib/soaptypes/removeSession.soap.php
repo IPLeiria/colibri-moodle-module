@@ -6,7 +6,7 @@ class removeSession{
     public $accessCredentials;
     
     /**
-     * @var sessionScheduleInfo
+     * @var string
      */
-    public $sessionInfo;
+    public $sessionUniqueID;
 }
