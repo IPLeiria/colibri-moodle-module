@@ -40,7 +40,8 @@ $string['invalidNumberOfParticipants'] = 'O número de participantes é inválid
 $string['createSessionFailed'] = 'Não foi possível criar a sessão no servidor Colibri';
 $string['modifySessionFailed'] = 'Não foi possível modificar a sessão {$a} no servidor Colibri';
 $string['removeSessionFailed'] = 'Não foi possível remover a sessão {$a} do servidor Colibri';
-$string['getSessionInfoFailed'] = 'Não foi possível obter informações sobre a sessão no servidor Colibri server';
+$string['getSessionInfoFailed'] = 'Não foi possível obter informações sobre a sessão no servidor Colibri';
+$string['getSessionsInfoFailed'] = 'Não foi possível obter informações sobre as sessões no servidor Colibri';
 
 $string['errorReturned'] = 'Ocorreu um erro ({$a})';
 $string['GENERIC_ERROR'] = 'Erro: {$a}';
@@ -59,6 +60,8 @@ $string['MISSING_SESSION_NAME'] = 'O nome da sessão não se encontra definido';
 $string['SESSION_START_TIME_GREATER_THAN_ENDTIME'] = 'A data de inicio é superior ou igual à data de fim';
 $string['COULD_NOT_GET_SESSION_INFO'] = 'Não foi possivel obter informações sobre a sessão';
 $string['INSUFFICIENT_PERMISSIONS'] = 'Permissões insuficientes';
+$string['COULD_NOT_MODIFY_SESSION'] = 'Não foi possível modificar a sessão';
+$string['COULD_NOT_REMOVE_SESSION'] = 'Não foi possível remover a sessão';
 
 // settings menu
 $string['colibri'] = 'Colibri';

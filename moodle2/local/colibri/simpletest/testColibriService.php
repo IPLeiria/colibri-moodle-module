@@ -90,7 +90,51 @@ class ColibriService_test extends UnitTestCase {
     }
 
     /**
-     * Test the getSessionInfo method
+     * Test the getSessionsInfo method
+     */
+    function testGetSessionsInfo() {
+	$sessions = array();
+	$total = 3;
+	for($a=0; $a<$total; $a++):
+	    //try to create a session with a unique name, 60 seconds from now, with a duration of 3 seconds, with one participant, not public available
+	    $result = ColibriService::createSession("test-".uniqid(), time() + 60, time() + 63, 1, 4941, 4942, false);
+	    $this->assertFalse(is_integer($result) && $result<0, 'An error ocorred while creating the session: '.ColibriService::getErrorString($result));
+	    $this->assertTrue(isset($result->sucess) && $result->sucess, 'The session was not created');
+
+	    $sessions[] = $result->sessionUniqueID;
+	endfor;
+	
+	$result = ColibriService::getSessionsInfo($sessions);
+	$this->assertTrue(is_array($result) && count($result)==$total, 'An error ocorred while retrieving the sessions information.');
+
+	foreach($sessions as $session):
+	    $result = ColibriService::removeSession($session);
+	endforeach;
+
+    }
+
+    /**
+     * Test the modifySession method
+     */
+    function testModifySession() {
+	
+	//try to create a session with a unique name, 60 seconds from now, with a duration of 3 seconds, with one participant, not public available
+	$result = ColibriService::createSession("test-".uniqid(), time() + 60, time() + 63, 1, 4941, 4942, false);
+	$this->assertFalse(is_integer($result) && $result<0, 'An error ocorred while creating the session: '.ColibriService::getErrorString($result));
+	$this->assertTrue(isset($result->sucess) && $result->sucess, 'The session was not created');
+
+	$newName = "test-xpto-".uniqid();
+	$result2 = ColibriService::modifySession($result->sessionUniqueID, $newName, time() + 60, time() + 63, 1, 4941, 4942, false);
+	$this->assertFalse(is_integer($result2) && $result2<0, 'An error ocorred while modifying the session: '.ColibriService::getErrorString($result));
+	$this->assertTrue(isset($result2->sucess) && $result2->sucess, 'The session was not modified');
+	$this->assertTrue(isset($result2->name) && $result2->name==$newName, 'The session name was not updated');
+	
+	$result = ColibriService::removeSession($result->sessionUniqueID);
+
+    }
+
+    /**
+     * Test the removeSession method
      */
     function testRemoveSession() {
 	//try to create a session with a unique name, 60 seconds from now, with a duration of 3 seconds, with one participant, not public available
@@ -99,6 +143,7 @@ class ColibriService_test extends UnitTestCase {
 	$this->assertTrue(isset($result->sucess) && $result->sucess, 'The session was not created');
 
 	$result = ColibriService::removeSession($result->sessionUniqueID);
+
 	$this->assertFalse(is_integer($result) && $result<0, 'An error ocorred while removing the session: '.ColibriService::getErrorString($result));
 	$this->assertTrue($result, 'The session information was not removed');
 
@@ -106,10 +151,10 @@ class ColibriService_test extends UnitTestCase {
 
     // TODO remove this method when done
     function testTemporary() {
-	/*
-	echo("<pre>Soap functions: \n" . print_r(ColibriService::getSoapFunctions(), true) . '</pre>');
-	echo("<pre>Soap types: \n" . print_r(ColibriService::getSoapTypes(), true) . '</pre>');
-	*/
+	
+//	echo("<pre>Soap functions: \n" . print_r(ColibriService::getSoapFunctions(), true) . '</pre>');
+//	echo("<pre>Soap types: \n" . print_r(ColibriService::getSoapTypes(), true) . '</pre>');
+	
 	
     }
 
