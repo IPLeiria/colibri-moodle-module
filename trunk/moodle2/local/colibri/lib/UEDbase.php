@@ -128,6 +128,9 @@ if(!class_exists('UEDbase')):
 	 * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
 	 */
 	public static function getErrorString($errorCode){
+	    if(!is_numeric($errorCode)):
+		$errorCode = self::UNKOWN_ERROR;
+	    endif;
 	    $string = self::getErrorConstantName($errorCode);
 	    if(empty ($string)):
 		$string = self::getErrorConstantName(self::UNKOWN_ERROR);

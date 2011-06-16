@@ -385,6 +385,10 @@ if(!class_exists('ColibriService')):
 		    return self::INVALID_END_DATE;
 		endif;
 
+		// Convert the timestamp to miliseconds
+		$startDateTimeStamp *=1000;
+		$endDateTimeStamp *=1000;
+
 		// check the number of participants
 		if($maxSessionUsers<=0):
 		    self::_log(self::getString('invalidNumberOfParticipants'), __FUNCTION__);
@@ -413,8 +417,6 @@ if(!class_exists('ColibriService')):
 		// call the method
 		$result = $client->createSession($params);
 
-		echo('<pre>'.print_r($result, true).'</pre>');
-
 		if(isset($result->return) && isset($result->return->sucess)):
 		    if($result->return->sucess):
 			return $result->return;
@@ -441,6 +443,7 @@ if(!class_exists('ColibriService')):
 	/**
 	 * Modifies a session on the system
 	 *
+	 * @param <String> $sessionUniqueID
 	 * @param <int> $sessionId
 	 * @param <String> $name
 	 * @param <int> $startDateTimeStamp
@@ -453,7 +456,7 @@ if(!class_exists('ColibriService')):
 	 *
 	 * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
 	 */// @TODO add the sessionId to modify
-	public static function modifySession($sessionId, $name, $startDateTimeStamp, $endDateTimeStamp, $maxSessionUsers=0, $sessionPin=NULL, $moderationPin=NULL, $listPubliclyInColibri=false){
+	public static function modifySession($sessionUniqueID, $sessionId, $name, $startDateTimeStamp, $endDateTimeStamp, $maxSessionUsers=0, $sessionPin=NULL, $moderationPin=NULL, $listPubliclyInColibri=false){
 	    try{
 		$client = self::getSoapClientInstance();
 
@@ -489,6 +492,7 @@ if(!class_exists('ColibriService')):
 		// method parameters
 		$params = array(
 		    'accessCredentials'=>ColibriService::getCredentials(),
+		    'sessionUniqueID'=>$sessionUniqueID,
 		    'sessionInfo'=>array(
 			'sessionId'=>$sessionId,
 			'name'=>$name,
@@ -531,19 +535,12 @@ if(!class_exists('ColibriService')):
 	/**
 	 * Removes a session on the system
 	 *
-	 * @param <int> $sessionId
-	 * @param <String> $name
-	 * @param <int> $startDateTimeStamp
-	 * @param <int> $endDateTimeStamp
-	 * @param <int> $maxSessionUsers
-	 * @param <int> $sessionPin
-	 * @param <int> $moderationPin
-	 * @param <Boolean> $listPubliclyInColibri
+	 * @param <String> $sessionUniqueID
 	 * @return <sessionResult>
 	 *
 	 * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
-	 */// @TODO remove all the junk and use only the sessionId to remove
-	public static function removeSession($sessionId){
+	 */
+	public static function removeSession($sessionUniqueID){
 	    try{
 		$client = self::getSoapClientInstance();
 
@@ -556,9 +553,7 @@ if(!class_exists('ColibriService')):
 		// method parameters
 		$params = array(
 		    'accessCredentials'=>ColibriService::getCredentials(),
-		    'sessionInfo'=>array(
-			'sessionId'=>$sessionId
-		    )
+		    'sessionUniqueID'=>$sessionUniqueID
 		);
 
 		// call the method
@@ -578,23 +573,24 @@ if(!class_exists('ColibriService')):
 
 	    }catch(SoapFault $fault){
 		$extra = (isset($fault->detail->ServiceFault->MessageError)?$fault->detail->ServiceFault->MessageError:'');
-		self::_log(self::getString('removeSessionFailed', $sessionId)." ({$fault->getMessage()}".(!empty($extra)?": $extra":'').")", __FUNCTION__."@".$fault->getLine());
+		self::_log(self::getString('removeSessionFailed', $sessionUniqueID)." ({$fault->getMessage()}".(!empty($extra)?": $extra":'').")", __FUNCTION__."@".$fault->getLine());
 		return self::SOAP_FAULT;
 	    }catch(Exception $ex){
-		self::_log(self::getString('removeSessionFailed', $sessionId)." (".$ex->getMessage().")", __FUNCTION__."@".$ex->getLine());
+		self::_log(self::getString('removeSessionFailed', $sessionUniqueID)." (".$ex->getMessage().")", __FUNCTION__."@".$ex->getLine());
 		return self::EXCEPTION;
 	    }
 	    return self::GENERIC_ERROR;
 	}
 
 	/**
-	 * Returns the session information about a session
+	 * Returns information about a session
 	 *
-	 * @param integer $sessionId with the session identifier
-	 * @return sessionResult with the result, negative integer with the error code on error
+	 * @param <String> $sessionUniqueID with the session unique identifier
+	 * @return <sessionResult> with the result, negative integer with the error code on error
+	 * 
 	 * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
 	 */
-	public static function getSessionInfo($sessionId){
+	public static function getSessionInfo($sessionUniqueID){
 	    try{
 		$client = self::getSoapClientInstance();
 
@@ -606,7 +602,7 @@ if(!class_exists('ColibriService')):
 
 		$params = array(
 		    'accessCredentials'=>ColibriService::getCredentials(),
-		    'sessionInfo'=>$sessionId
+		    'sessionUniqueID'=>$sessionUniqueID
 		);
 
 		$result = $client->getSessionInfo($params);
