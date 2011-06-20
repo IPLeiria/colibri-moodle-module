@@ -217,7 +217,8 @@ class MoodleQuickForm_selectfromto extends HTML_QuickForm_element {
 	    // sync the excluded values with the values
 	    $this->_fromOptions['exclude'] = $this->_toOptions['values'];
 	endif;
-	return $this->_toOptions;
+	$values = array($this->getName().'_values'=>$this->_toOptions['values']);
+	return $values;
     }
     
     // }}}
@@ -384,7 +385,7 @@ if(!class_exists('ColibriSelectFromUsers')):
     class ColibriSelectFromUsers extends ColibriSelectFromDbUsers {
 	protected $_optValues=array();
 
-	public function __construct($name, $options) {
+	public function __construct($name, $options=array()) {
 	    //$this->enrolid  = $options['enrolid'];
 	    parent::__construct($name, $options);
 	    $this->_optValues = $options['values'];

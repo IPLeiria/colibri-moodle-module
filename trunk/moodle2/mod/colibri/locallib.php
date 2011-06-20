@@ -10,9 +10,10 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-
-require_once(dirname(__FILE__).'/lib.php');     // we extend this library here
+global $CFG;
+// Load the ColibriService library
 require_once($CFG->dirroot.'/local/colibri/lib.php');
+ColibriService::load();
 
 if(!class_exists('Colibri')):
     /**
@@ -26,6 +27,7 @@ if(!class_exists('Colibri')):
      */
     class Colibri extends UEDbase{
 	const INSUFFICIENT_PERMISSIONS = -100;
+	const DATABASE_INSERT_FAILED = -101;
 
 	/**
 	 * Verify if the credentials have access to the service
@@ -45,61 +47,59 @@ if(!class_exists('Colibri')):
 	 *
 	 * @param <int> $userId the moodle user identifier
 	 * @param <int> $courseId the moodle course identifier
-	 * @param <String> $name the session name
-	 * @param <int> $startDateTimeStamp the session start time
-	 * @param <int> $endDateTimeStamp the session end time
-	 * @param <int> $maxSessionUsers the maximum number of user in the session
-	 * @param <int> $sessionPin the session pin
-	 * @param <int> $moderationPin the moderation pin
-	 * @param <Boolean> $listPubliclyInColibri show this session on the public Colibri sessions on the Colibri site?
+	 * @param <sessionScheduleInfo> $sessionInfo with the session information
 	 * @return <int> with the resource id
 	 * @uses global $DB to access the database
 	 *
 	 * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
 	 */
-	public static function createSession($userId, $courseId, $name, $startDateTimeStamp, $endDateTimeStamp, $maxSessionUsers=0, $sessionPin=NULL, $moderationPin=NULL, $listPubliclyInColibri=false){
+	public static function createSession($userId, $courseId, sessionScheduleInfo $sessionInfo, $users=array(), $intro='', $introformat=0){
 	    global $DB;
 	    try{
 		$coursecontext = get_context_instance(CONTEXT_COURSE, $courseId);
-		if(!has_capability('local/colibri:managesession', $coursecontext, $userId)):
+		if( !has_capability('mod/colibri:managesession', $coursecontext, $userId)):
 		    return INSUFFICIENT_PERMISSIONS;
 		endif;
 
-		$result = ColibriService::createSession($name, $startDateTimeStamp, $endDateTimeStamp, $maxSessionUsers, $sessionPin, $moderationPin, $listPubliclyInColibri);
+		$result = ColibriService::createSession($sessionInfo);
 
 		// If the session cannot be created, return the error code
 		if(is_integer($result) && $result<0):
 		    return $result;
 		endif;
-/*
-		$cmid = $data->coursemodule;
-		$data->timemodified = time();
-		$displayoptions = array();
-		if (isset($data->display) && $data->display == RESOURCELIB_DISPLAY_POPUP) {
-		    $displayoptions['popupwidth']  = $data->popupwidth;
-		    $displayoptions['popupheight'] = $data->popupheight;
-		}
-		if (isset($data->display) && in_array($data->display, array(RESOURCELIB_DISPLAY_AUTO, RESOURCELIB_DISPLAY_EMBED, RESOURCELIB_DISPLAY_FRAME))) {
-		    $displayoptions['printheading'] = (int)!empty($data->printheading);
-		    $displayoptions['printintro']   = (int)!empty($data->printintro);
-		}
-		$data->displayoptions = serialize($displayoptions);
 
-		if($data->id = $DB->insert_record('adaptable', $data)){
-			// we need to use context now, so we need to make sure all needed info is already in db
-			$DB->set_field('course_modules', 'instance', $data->id, array('id'=>$cmid));
-			$data->instance = $data->id;
-			$eventdata = new stdClass();
-		    if(adaptable_add_relations_to_db($data, $eventdata)){
-			    events_trigger('adaptable_created', $eventdata);
-			    adaptable_set_mainfile($data);
+		$resource = new stdClass();
+		$resource->course = $courseId;
+		$resource->sessionuniqueid = $result->sessionUniqueID;
+		$resource->sessionnumber = $result->sessionNumber;
+		$resource->name = $result->name;
+		$resource->moderationpin = $result->moderationPin;
+		$resource->sessionpin = $result->sessionPin;
+		$resource->startdate = round($result->startDateTimeStamp/1000);
+		$resource->enddate = round($result->endDateTimeStamp/1000);
+		$resource->maxsessionusers = $result->maxSessionUsers;
+		$resource->listpubliclyoncolibri = ($result->listPubliclyInColibri)?1:0;
+		$resource->state = 0;
+		$resource->creatorid = $userId;
+		$resource->timemodified = time();
+		$resource->intro = $intro;
+		$resource->introformat = $introformat;
 
-			    return $data->id;
-			}
-		}
-
-		return $data->id;
-*/
+		if($resource->id = $DB->insert_record('colibri', $resource)):
+		    foreach ($users as $user):
+			$dbUser = new stdClass();
+			$dbUser->colibrisessionid = $resource->id;
+			$dbUser->userid = $user;
+			$dbUser->type = 0;
+			$dbUser->reservedbyid = $resource->creatorid;
+			
+			$DB->insert_record('colibri_users', $dbUser);
+		
+		    endforeach;
+		    return $resource->id;
+		endif;
+		return DATABASE_INSERT_FAILED;
+		
 	    }catch(Exception $ex){
 		self::_log(self::getString('createSessionFailed')." (".$ex->getMessage().")", __FUNCTION__."@".$ex->getLine());
 		return self::EXCEPTION;

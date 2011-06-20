@@ -102,6 +102,7 @@ class mod_colibri_mod_form extends moodleform_mod {
         $users = $mform->addElement('selectfromto', 'authorizedsessionusers', $labels);
 	$mform->disabledIf('selectfromto', 'sessionusersradio', 'eq', 0);
 	$mform->setAdvanced('authorizedsessionusers');
+        $mform->addHelpButton('authorizedsessionusers', 'authorizedsessionusers', 'colibri');
 
 	// based on the selected users, increment the size of the reserved seats accordingly
 	$usersSelected = $users->getSelected();
@@ -117,19 +118,58 @@ class mod_colibri_mod_form extends moodleform_mod {
         // Standard buttons, common to all modules ------------------------------------
         $this->add_action_buttons();
     }
+    /**
+     * Get the form data and return null if the submit button was just a refresh (like the one's to add or remove an form element
+     */
+    function get_data() {
+	if ($this->is_submitted() and $this->is_validated() and $postData = &data_submitted()):
+	    if(isset($postData->authorizedsessionusers_selectuser) || isset($postData->authorizedsessionusers_clearuser)):
+		return null;
+	    endif;
+	endif;
+	return parent::get_data();
+    }
 
-
-
+    /**
+     * Validate the submited form data
+     */
     function validation($data, $files) {
         global $CFG;
         $errors= array();
 
         $errors = parent::validation($data, $files);
-	/*
-        if(is_null(ColibriService::getSoapClientInstance($data['colibri_wsdl_url']))){
-            $errors['colibri_wsdl_url'] = get_string('colibriInvalidWsdlUrl', COLIBRI_PLUGINNAME);
-        }
-	*/
+
+	// session name
+	$var = 'name';
+	if(empty($data[$var])):
+	    $errors[$var] = get_string('emptysessionname', 'colibri');
+	endif;
+
+	// session dates
+	$currentdate = usergetdate(time());
+	$currentdate = make_timestamp($currentdate['year'], $currentdate['mon'], $currentdate['mday'], $currentdate['hours'], $currentdate['minutes']);
+	$startdatetime = usergetdate($data['startdatetime']);
+	$startdatetime = make_timestamp($startdatetime['year'], $startdatetime['mon'], $startdatetime['mday'], $startdatetime['hours'], $startdatetime['minutes']);
+	if($startdatetime<=$currentdate):
+	    $errors['startdatetime'] = get_string('youcannotcreateasessioninthepast', 'colibri');
+	endif;
+	if($data['enddatetime']<=$data['startdatetime']):
+	    $errors['enddatetime'] = get_string('enddatemustbegreaterthanstartdate', 'colibri');
+	endif;
+
+	// pin
+	if(!is_numeric($data['sessionpin']) || $data['sessionpin']<0 || $data['sessionpin']>9999):
+	    $errors['sessionpin'] = get_string('sessionpinmustbeavalidnumber', 'colibri').$data['sessionpin'];
+	endif;
+	if(!is_numeric($data['moderationpin']) || $data['moderationpin']<0 || $data['moderationpin']>9999):
+	    $errors['moderationpin'] = get_string('moderationpinmustbeavalidnumber', 'colibri');
+	endif;
+	
+	// seats
+	if(!is_numeric($data['maxsessionusers']) || $data['maxsessionusers']<=0):
+	    $errors['maxsessionusers'] = get_string('dontbelikethatandinvitesomeonetothesession', 'colibri');
+	endif;
+	
         return $errors;
     }
 

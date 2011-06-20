@@ -1,11 +1,28 @@
 <?php
-class accessCredentials{
+if(!class_exists('accessCredentials')):
+
     /**
-     * @var string
+     * Provides the Access Credentials to use the webservice
+     *
+     * @package    	Colibri
+     * @subpackage 	local_colibri
+     * @version		2011.0
+     * @author		Cláudio Esperança <claudio.esperanca@ipleiria.pt> - {@link http://ued.ipleiria.pt | Learning Distance Unit }, Polytechnic Institute of Leiria
+     * @license		http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
      */
-    public $installId;
-    /**
-     * @var string
-     */
-    public $password;
-}
+    class accessCredentials{
+	/**
+	 * @var string
+	 */
+	public $installId;
+	/**
+	 * @var string
+	 */
+	public $password;
+	
+	function __construct($installId='', $password=''){
+	    $this->installId = $installId;
+	    $this->password = $password;
+	}
+    }
+endif;

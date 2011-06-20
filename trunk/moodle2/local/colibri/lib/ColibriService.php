@@ -42,6 +42,7 @@ if(!class_exists('ColibriService')):
 	const COULD_NOT_GET_SESSION_INFO = -15;
 	const COULD_NOT_MODIFY_SESSION = -16;
 	const COULD_NOT_REMOVE_SESSION = -17;
+	const INVALID_NAME = -18;
 
 	/**
 	 * @var <string> with the class name
@@ -90,8 +91,7 @@ if(!class_exists('ColibriService')):
 		endif;
 
 		// cache the credentials
-		self::$_accessCredentials->installId = get_config(COLIBRI_PLUGINNAME, 'colibri_installation_identifier');
-		self::$_accessCredentials->password = get_config(COLIBRI_PLUGINNAME, 'colibri_installation_password');
+		self::$_accessCredentials = new accessCredentials(get_config(COLIBRI_PLUGINNAME, 'colibri_installation_identifier'), get_config(COLIBRI_PLUGINNAME, 'colibri_installation_password'));
 
 		// Enable trace
 		$options = array('trace' => true);
@@ -217,7 +217,7 @@ if(!class_exists('ColibriService')):
 	/**
 	 * Initialize the service
 	 */
-	private static function load(){
+	public static function load(){
 	    // Set the soap types directory
 	    if(!defined('COLIBRI_SOAPTYPES_DIR')):
 		define('COLIBRI_SOAPTYPES_DIR', dirname(__FILE__) . '/soaptypes/');
@@ -356,18 +356,12 @@ if(!class_exists('ColibriService')):
 	/**
 	 * Creates a session on the system
 	 *
-	 * @param <String> $name
-	 * @param <int> $startDateTimeStamp
-	 * @param <int> $endDateTimeStamp
-	 * @param <int> $maxSessionUsers
-	 * @param <int> $sessionPin
-	 * @param <int> $moderationPin
-	 * @param <Boolean> $listPubliclyInColibri
+	 * @param <sessionScheduleInfo> $sessionInfo
 	 * @return <sessionResult>
 	 *
 	 * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
 	 */
-	public static function createSession($name, $startDateTimeStamp, $endDateTimeStamp, $maxSessionUsers=0, $sessionPin=NULL, $moderationPin=NULL, $listPubliclyInColibri=false){
+	public static function createSession(sessionScheduleInfo $sessionInfo){
 	    try{
 		$client = self::getSoapClientInstance();
 
@@ -377,45 +371,10 @@ if(!class_exists('ColibriService')):
 		    return self::SOAP_INSTANCE_ERROR;
 		endif;
 
-		// check the start date value
-		if(!is_numeric($startDateTimeStamp) || (int)$startDateTimeStamp<time()):
-		    self::_log(self::getString('invalidStartDate'), __FUNCTION__);
-		    return self::INVALID_START_DATE;
-		endif;
-
-		// check end date value
-		if(!is_numeric($endDateTimeStamp) || (int)$endDateTimeStamp<$startDateTimeStamp):
-		    self::_log(self::getString('invalidEndDate'), __FUNCTION__);
-		    return self::INVALID_END_DATE;
-		endif;
-
-		// Convert the timestamp to miliseconds
-		$startDateTimeStamp *=1000;
-		$endDateTimeStamp *=1000;
-
-		// check the number of participants
-		if($maxSessionUsers<=0):
-		    self::_log(self::getString('invalidNumberOfParticipants'), __FUNCTION__);
-		    return self::INVALID_NUMBER_OF_PARTICIPANTS;
-		endif;
-
-		// generate a session pin if needed
-		$sessionPin = is_null($sessionPin)?self::generatePin():$sessionPin;
-		// generate a moderation pin if needed
-		$moderationPin = is_null($moderationPin)?self::generatePin():$moderationPin;
-
 		// method parameters
 		$params = array(
 		    'accessCredentials'=>ColibriService::getCredentials(),
-		    'sessionInfo'=>array(
-			'name'=>$name,
-			'startDateTimeStamp'=>$startDateTimeStamp,
-			'endDateTimeStamp'=>$endDateTimeStamp,
-			'maxSessionUsers'=>$maxSessionUsers,
-			'listPubliclyInColibri'=>$listPubliclyInColibri,
-			'moderationPin'=>$moderationPin,
-			'sessionPin'=>$sessionPin
-		    )
+		    'sessionInfo'=>$sessionInfo
 		);
 
 		// call the method
@@ -448,18 +407,12 @@ if(!class_exists('ColibriService')):
 	 * Modifies a session on the system
 	 *
 	 * @param <String> $sessionUniqueID
-	 * @param <String> $name
-	 * @param <int> $startDateTimeStamp
-	 * @param <int> $endDateTimeStamp
-	 * @param <int> $maxSessionUsers
-	 * @param <int> $sessionPin
-	 * @param <int> $moderationPin
-	 * @param <Boolean> $listPubliclyInColibri
+	 * @param <sessionScheduleInfo> $sessionInfo
 	 * @return <sessionResult>
 	 *
 	 * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
 	 */// @TODO add the sessionId to modify
-	public static function modifySession($sessionUniqueID, $name, $startDateTimeStamp, $endDateTimeStamp, $maxSessionUsers=0, $sessionPin=NULL, $moderationPin=NULL, $listPubliclyInColibri=false){
+	public static function modifySession($sessionUniqueID, sessionScheduleInfo $sessionInfo){
 	    try{
 		$client = self::getSoapClientInstance();
 
@@ -469,46 +422,11 @@ if(!class_exists('ColibriService')):
 		    return self::SOAP_INSTANCE_ERROR;
 		endif;
 
-		// check the start date value
-		if(!is_numeric($startDateTimeStamp) || (int)$startDateTimeStamp<time()):
-		    self::_log(self::getString('invalidStartDate'), __FUNCTION__);
-		    return self::INVALID_START_DATE;
-		endif;
-
-		// check end date value
-		if(!is_numeric($endDateTimeStamp) || (int)$endDateTimeStamp<$startDateTimeStamp):
-		    self::_log(self::getString('invalidEndDate'), __FUNCTION__);
-		    return self::INVALID_END_DATE;
-		endif;
-		
-		// Convert the timestamp to miliseconds
-		$startDateTimeStamp *=1000;
-		$endDateTimeStamp *=1000;
-
-		// check the number of participants
-		if($maxSessionUsers<=0):
-		    self::_log(self::getString('invalidNumberOfParticipants'), __FUNCTION__);
-		    return self::INVALID_NUMBER_OF_PARTICIPANTS;
-		endif;
-
-		// generate a session pin if needed
-		$sessionPin = is_null($sessionPin)?substr(mt_rand(10000,19999),1):$sessionPin;
-		// generate a moderation pin if needed
-		$moderationPin = is_null($moderationPin)?substr(mt_rand(10000,19999),1):$moderationPin;
-
 		// method parameters
 		$params = array(
 		    'accessCredentials'=>ColibriService::getCredentials(),
 		    'sessionUniqueID'=>$sessionUniqueID,
-		    'sessionInfo'=>array(
-			'name'=>$name,
-			'startDateTimeStamp'=>$startDateTimeStamp,
-			'endDateTimeStamp'=>$endDateTimeStamp,
-			'maxSessionUsers'=>$maxSessionUsers,
-			'listPubliclyInColibri'=>$listPubliclyInColibri,
-			'moderationPin'=>$moderationPin,
-			'sessionPin'=>$sessionPin
-		    )
+		    'sessionInfo'=>$sessionInfo
 		);
 
 		// call the method

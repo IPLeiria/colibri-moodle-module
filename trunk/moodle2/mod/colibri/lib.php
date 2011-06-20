@@ -9,6 +9,9 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+require_once(dirname(__FILE__).'/locallib.php');     // we extend this library here
+
 /**
  * List of features supported in Colibri module
  * @param string $feature FEATURE_xx constant for requested feature
@@ -63,83 +66,37 @@ function colibri_get_post_actions() {
 }
 
 /**
- * Add the colibri relations to the database
- * @param $data to get the data from
- * @param $eventdata to append the event data
- * @return boolean true on success, false otherwise
- *//*
-function colibri_add_relations_to_db($data, &$eventdata){
-    global $DB;
-    
-	$colibriRelationsData = new stdClass();
-    $colibriRelationsData->colibri_id = $data->instance;
-    $colibriRelationsData->resource_id = $data->defaultResourceId;
-    $colibriRelationsData->type = 'default';
-    $colibriRelationsData->original_mode = $data->defaultResourceOriginalMode;
-    $colibriRelationsData->original_content_type = $data->defaultResourceOriginalContentType;
-    if($DB->insert_record('colibri_relations', $colibriRelationsData)){
-    	$eventdata->defaultResource = $colibriRelationsData;
-    	$eventdata->alternativeResources = array();
-    	
-    	$alternativeResource = array();
-		foreach($data as $key=>$value){
-        	if(preg_match("/resourceAlternative\d+$/", $key)){
-        		$alternativeResource = new stdClass();
-        		$alternativeResource->colibri_id = $data->instance;
-        		$alternativeResource->resource_id = $data->{"{$key}Resource"};
-        		$alternativeResource->adaptation_of = $data->defaultResourceId;
-        		$alternativeResource->type = 'alternative';
-        		$alternativeResource->original_mode = $data->{"{$key}OriginalMode"};
-        		$alternativeResource->adaptation_type = $data->{"{$key}AdaptationType"};
-        		$alternativeResource->representation_form = $data->{"{$key}RepresentationForm"};
-        		$alternativeResource->original_access_mode = $data->defaultResourceOriginalMode;
-        		
-        		if($DB->insert_record('colibri_relations', $alternativeResource)){
-        			$eventdata->alternativeResources[]=$alternativeResource;
-        		}
-        	}
-		}
-		return true;
-    }
-    return false;
-}*/
-
-/**
  * Add colibri instance.
  * 
  * @param object $data
  * @param object $mform
  * @return int new resoruce instance id
  */
-function colibri_add_instance($data, $mform) {
-    global $CFG, $DB;
-    require_once("$CFG->libdir/resourcelib.php");
-    $cmid = $data->coursemodule;
-    $data->timemodified = time();
-    $displayoptions = array();
-    if (isset($data->display) && $data->display == RESOURCELIB_DISPLAY_POPUP) {
-        $displayoptions['popupwidth']  = $data->popupwidth;
-        $displayoptions['popupheight'] = $data->popupheight;
-    }
-    if (isset($data->display) && in_array($data->display, array(RESOURCELIB_DISPLAY_AUTO, RESOURCELIB_DISPLAY_EMBED, RESOURCELIB_DISPLAY_FRAME))) {
-        $displayoptions['printheading'] = (int)!empty($data->printheading);
-        $displayoptions['printintro']   = (int)!empty($data->printintro);
-    }
-    $data->displayoptions = serialize($displayoptions);
-
-    if($data->id = $DB->insert_record('colibri', $data)){
-	    // we need to use context now, so we need to make sure all needed info is already in db
-	    $DB->set_field('course_modules', 'instance', $data->id, array('id'=>$cmid));
-	    $data->instance = $data->id;
-	    $eventdata = new stdClass();
-    	if(colibri_add_relations_to_db($data, $eventdata)){
-	    	events_trigger('colibri_created', $eventdata);
-    		colibri_set_mainfile($data);
-    		
-    		return $data->id;
-	    }
-    }
+function colibri_add_instance($data) {
+    global $CFG, $DB, $USER;
     
+    $data->id = Colibri::createSession(
+	$USER->id,
+	$data->course,
+	new sessionScheduleInfo(
+	    $data->name,
+	    $data->startdatetime,
+	    $data->enddatetime,
+	    $data->maxsessionusers,
+	    $data->sessionpin,
+	    $data->moderationpin,
+	    $data->publicsession==0?false:true,
+	    $data
+	),
+	$data->intro,
+	$data->introformat
+    );
+    if($data->id>0):
+	// we need to use context now, so we need to make sure all needed info is already in db
+	//$DB->set_field('course_modules', 'instance', $data->id, array('id'=>$data->coursemodule));
+	echo('<pre>'.print_r($data, true).'</pre>');
+	
+    endif;
     return $data->id;
 }
 
