@@ -26,10 +26,7 @@ $capabilities = array(
 	    'manager' => CAP_ALLOW
 	)
     ),
-);
 
-// Capability to attend sessions with the plugin
-$capabilities = array(
     'mod/colibri:attendsession' => array(
 	'captype' => 'read',
 	'contextlevel' => CONTEXT_MODULE,

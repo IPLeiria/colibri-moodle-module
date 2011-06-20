@@ -34,6 +34,7 @@ $string['getColibriTimeFailed'] = 'Unable to get the time from the Colibri serve
 
 $string['checkAccessFailed'] = 'Unable to create the check the credentials on the Colibri server';
 
+$string['invalidName'] = 'The session name is invalid';
 $string['invalidStartDate'] = 'The session start date is invalid';
 $string['invalidEndDate'] = 'The session end date is invalid';
 $string['invalidNumberOfParticipants'] = 'The of participants provided is invalid (the session must have participants!)';
@@ -62,6 +63,7 @@ $string['COULD_NOT_GET_SESSION_INFO'] = 'Unable to get the session info';
 $string['INSUFFICIENT_PERMISSIONS'] = 'Insufficient permissions';
 $string['COULD_NOT_MODIFY_SESSION'] = 'Unable to modify the session';
 $string['COULD_NOT_REMOVE_SESSION'] = 'Unable to remove the session';
+$string['INVALID_NAME'] = 'Invalid name';
 
 
 // settings menu

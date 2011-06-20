@@ -35,6 +35,7 @@ $string['moderationpin_help'] = 'The moderation PIN is the code to be entered by
 $string['invalidmoderationpin'] = 'Invalid moderation PIN';
 $string['publicsession'] = 'Public session';
 $string['publicsession_help'] = 'Is this session public? If yes, then this session will appear on the public session list on the Colibri website';
+$string['authorizedsessionusers_help'] = 'Select users with specific access to the session. Their seats will be reserved and can\'t be occupied by the other users';
 
 
 $string['sessionusers'] = 'Session Users';
@@ -50,3 +51,12 @@ $string['clearseat'] = 'Clear seat(s)';
 $string['clearseatoftheusers'] = 'Clear seat(s) of the selected user(s)';
 $string['users'] = 'Users';
 $string['usersmatching'] = 'Users matching \'{$a}\'';
+
+//validation
+$string['emptysessionname'] = 'The session name is empty';
+$string['youcannotcreateasessioninthepast'] = 'Unable to create a session in the past';
+$string['enddatemustbegreaterthanstartdate'] = 'End date must happen after start date';
+$string['sessionpinmustbeavalidnumber'] = 'Session Pin must be a valid number';
+$string['moderationpinmustbeavalidnumber'] = 'Moderation Pin must be a valid number';
+$string['dontbelikethatandinvitesomeonetothesession'] = 'Don\'t be like that and allow someone in the session';
+
