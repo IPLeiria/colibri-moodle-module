@@ -172,7 +172,7 @@ class MoodleQuickForm_selectfromto extends HTML_QuickForm_element {
 
 	if(isset($this->_toOptions['values'])):
 	    foreach($this->_toOptions['values'] as $userid):
-		$str .= "<input name=\"_selecteduser_{$userid}\" type=\"hidden\" value=\"$userid\" />";
+		$str .= "<input name=\"".$this->getName()."_selecteduser_{$userid}\" type=\"hidden\" value=\"$userid\" />";
 	    endforeach;
 	endif;
 	
@@ -191,9 +191,10 @@ class MoodleQuickForm_selectfromto extends HTML_QuickForm_element {
 	    $submitValues = (array) $values;
 	endif;
         if(!empty($submitValues)):
+
 	    $this->_toOptions['values'] = array();
 	    foreach($submitValues as $key=>$value):
-		if(preg_match("/_selecteduser_\d+$/", $key)):
+		if(preg_match("/^".$this->getName()."_selecteduser_\d+$/", $key)):
 		    $this->_toOptions['values'][] = $submitValues[$key];
 		endif;
 	    endforeach;
@@ -217,17 +218,56 @@ class MoodleQuickForm_selectfromto extends HTML_QuickForm_element {
 	    // sync the excluded values with the values
 	    $this->_fromOptions['exclude'] = $this->_toOptions['values'];
 	endif;
-	$values = array($this->getName().'_values'=>$this->_toOptions['values']);
+	$values = array($this->getName().'_values'=>isset($this->_toOptions['values'])?$this->_toOptions['values']:array());
 	return $values;
     }
     
     // }}}
+
+    // {{{ setValue()
+
+    /**
+     * Sets the value of the form element
+     *
+     * @param     object    $values      Default values of the form element
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setValues($values){
+	$submitValues = array();
+	$a=0;
+	foreach($values as $value):
+	    $submitValues[$this->getName().'_selecteduser_'.$a++] = $value;
+	endforeach;
+	$this->exportValue($submitValues);
+    } // end func setValue
+
+    // }}}
+    // {{{ getValue()
+
+    /**
+     * Returns the value of the form element
+     *
+     * @since     1.0
+     * @access    public
+     * @return    mixed
+     */
+    function getValues(){
+        // interface
+        return $this->getSelected();
+    } // end func getValue
+
+    // }}}
+    // {{{ getSelected()
     function getSelected(){
 	if(!isset($this->_toOptions['values'])):
 	    $this->exportValue();
 	endif;
-	return $this->_toOptions['values'];
+	return isset($this->_toOptions['values'])?$this->_toOptions['values']:array();
     }
+
+    // }}}
     // {{{ onQuickFormEvent()
 
     function onQuickFormEvent($event, $arg, &$caller){
@@ -235,6 +275,10 @@ class MoodleQuickForm_selectfromto extends HTML_QuickForm_element {
 	    case 'createElement':
 		$this->exportValue();
 		return parent::onQuickFormEvent($event, $arg, $caller);
+
+            case 'setGroupValue':
+                $this->setValue($arg);
+		break;
 	/*
 	    case 'updateValue':
 		if ($caller->isSubmitted()):
@@ -388,7 +432,7 @@ if(!class_exists('ColibriSelectFromUsers')):
 	public function __construct($name, $options=array()) {
 	    //$this->enrolid  = $options['enrolid'];
 	    parent::__construct($name, $options);
-	    $this->_optValues = $options['values'];
+	    $this->_optValues = isset($options['values'])?$options['values']:array();
 	}
 
 	/**

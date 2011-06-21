@@ -350,7 +350,7 @@ if(!class_exists('ColibriService')):
 	 * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
 	 */
 	public static function generatePin(){
-	    return substr(mt_rand(10000,19999),1);
+	    return substr(mt_rand(11111,19999),1);
 	}
 
 	/**
@@ -457,7 +457,7 @@ if(!class_exists('ColibriService')):
 	}
 
 	/**
-	 * Removes a session on the system
+	 * Removes a session from the Colibri system
 	 *
 	 * @param <String> $sessionUniqueID
 	 * @return <sessionResult>

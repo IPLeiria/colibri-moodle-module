@@ -17,6 +17,16 @@ require_once(dirname(__FILE__) . '/locallib.php');
 require_once(dirname(__FILE__) . '/form/selectfromto.php');
 
 class mod_colibri_mod_form extends moodleform_mod {
+    private $usersData = NULL;
+
+    public function __construct(&$data, $section, $cm, $course){
+	    global $DB;
+
+	    $this->usersData = &$data;
+	    self::getData($data->instance, $this->usersData);
+
+	    parent::__construct($data, $section, $cm, $course);
+    }
 
     /**
      * Defines the colibri instance configuration form
@@ -30,7 +40,7 @@ class mod_colibri_mod_form extends moodleform_mod {
         $mform = $this->_form;
 
 	if(!$postData = &data_submitted()){
-	    //$postData = $this->externalData;
+	    $postData = $this->usersData;
         }
 
         // General --------------------------------------------------------------------
@@ -54,12 +64,22 @@ class mod_colibri_mod_form extends moodleform_mod {
         $mform->addElement('date_time_selector', 'startdatetime', $label);
         $mform->addRule('startdatetime', null, 'required', null, 'client');
         $mform->addHelpButton('startdatetime', 'startdatetime', 'colibri');
+	$mform->setDefault('startdatetime', time()+3600);
 
+	/*
 	// End date time
 	$label = get_string('enddatetime', 'colibri');
         $mform->addElement('date_time_selector', 'enddatetime', $label);
         $mform->addRule('enddatetime', null, 'required', null, 'client');
         $mform->addHelpButton('enddatetime', 'enddatetime', 'colibri');
+	$mform->setDefault('enddatetime', time()+2*3600);
+	*/
+
+	//duration
+	$mform->addElement('duration', 'duration', get_string('duration', 'colibri'));
+        $mform->addHelpButton('duration', 'duration', 'colibri');
+        $mform->addRule('duration', null, 'required', null, 'client');
+        $mform->setDefault('duration', 3600);
 
 	$mform->addElement('text', 'sessionpin', get_string('sessionpin', 'colibri'), array('size'=>'4'));
 	$mform->setType('sessionpin', PARAM_INT);
@@ -103,6 +123,10 @@ class mod_colibri_mod_form extends moodleform_mod {
 	$mform->disabledIf('selectfromto', 'sessionusersradio', 'eq', 0);
 	$mform->setAdvanced('authorizedsessionusers');
         $mform->addHelpButton('authorizedsessionusers', 'authorizedsessionusers', 'colibri');
+	
+	if(isset($postData->users)):
+	    $users->setValues($postData->users);
+	endif;
 
 	// based on the selected users, increment the size of the reserved seats accordingly
 	$usersSelected = $users->getSelected();
@@ -153,9 +177,17 @@ class mod_colibri_mod_form extends moodleform_mod {
 	if($startdatetime<=$currentdate):
 	    $errors['startdatetime'] = get_string('youcannotcreateasessioninthepast', 'colibri');
 	endif;
+	/*
 	if($data['enddatetime']<=$data['startdatetime']):
 	    $errors['enddatetime'] = get_string('enddatemustbegreaterthanstartdate', 'colibri');
 	endif;
+	 */
+	if(!is_numeric($data['duration'])):
+	    $errors['duration'] = get_string('sessiondurationmustbeanumber', 'colibri');
+	elseif($data['duration']<=0):
+	    $errors['duration'] = get_string('sessiondurationmustbegreaterthanzero', 'colibri');
+	endif;
+	
 
 	// pin
 	if(!is_numeric($data['sessionpin']) || $data['sessionpin']<0 || $data['sessionpin']>9999):
@@ -173,6 +205,8 @@ class mod_colibri_mod_form extends moodleform_mod {
         return $errors;
     }
 
+
+
     /**
      * Prepares the form before data are set
      *
@@ -182,35 +216,52 @@ class mod_colibri_mod_form extends moodleform_mod {
      * @return void
      */
     function data_preprocessing(&$data) {
-	/*
-        if ($this->current->instance) {
-            // editing an existing colibri - let us prepare the added editor elements (intro done automatically)
-            $draftitemid = file_get_submitted_draft_itemid('instructauthors');
-            $data['instructauthorseditor']['text'] = file_prepare_draft_area($draftitemid, $this->context->id,
-                                'mod_colibri', 'instructauthors', 0,
-                                colibri::instruction_editors_options($this->context),
-                                $data['instructauthors']);
-            $data['instructauthorseditor']['format'] = $data['instructauthorsformat'];
-            $data['instructauthorseditor']['itemid'] = $draftitemid;
+        if ($this->current->instance):
+            // editing an existing colibri session - let us prepare the added editor elements (intro done automatically)
+	    $data['duration'] = $data['enddate']-$data['startdate'];
+	    $data['startdatetime'] = $data['startdate'];
+	    $data['enddatetime'] = $data['enddate'];
+        else:
+            // adding a new colibri session instance
+        endif;
+    }
 
-            $draftitemid = file_get_submitted_draft_itemid('instructreviewers');
-            $data['instructreviewerseditor']['text'] = file_prepare_draft_area($draftitemid, $this->context->id,
-                                'mod_colibri', 'instructreviewers', 0,
-                                colibri::instruction_editors_options($this->context),
-                                $data['instructreviewers']);
-            $data['instructreviewerseditor']['format'] = $data['instructreviewersformat'];
-            $data['instructreviewerseditor']['itemid'] = $draftitemid;
-        } else {
-            // adding a new colibri instance
-            $draftitemid = file_get_submitted_draft_itemid('instructauthors');
-            file_prepare_draft_area($draftitemid, null, 'mod_colibri', 'instructauthors', 0);    // no context yet, itemid not used
-            $data['instructauthorseditor'] = array('text' => '', 'format' => editors_get_preferred_format(), 'itemid' => $draftitemid);
 
-            $draftitemid = file_get_submitted_draft_itemid('instructreviewers');
-            file_prepare_draft_area($draftitemid, null, 'mod_colibri', 'instructreviewers', 0);    // no context yet, itemid not used
-            $data['instructreviewerseditor'] = array('text' => '', 'format' => editors_get_preferred_format(), 'itemid' => $draftitemid);
-        }
-	 */
+    /**
+     * Load the adaptable_relations data
+     *
+     * @param mixed $default_values object or array of default values
+     */
+    function set_data($default_values) {
+    	global $DB;
 
+        if (is_object($default_values)):
+	    $this->usersData = self::getData($default_values->instance, $default_values);
+        endif;
+
+        parent::set_data($default_values);
+    }
+
+
+    /**
+     * Load the users data for the instance id
+     *
+     * @param int with the id of the module
+     */
+    private static function getData($id, &$defaultValues=NULL) {
+    	global $DB;
+    	if (!is_object($defaultValues)):
+    		$defaultValues = new stdClass();
+    		$defaultValues->instance = $id;
+    	endif;
+        if($users = Colibri::getSessionUsers($id)):
+	    $defaultValues->users = array();
+	    
+	    foreach($users as $user):
+		$defaultValues->users[] = $user->userid;
+	   endforeach;
+	   
+        endif;
+        return $defaultValues;
     }
 }

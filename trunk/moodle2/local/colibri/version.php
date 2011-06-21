@@ -12,5 +12,5 @@
  * $Date$
  * $Rev$
  */
-$plugin->version = 2011061403;
+$plugin->version = 2011062100;
 $plugin->requires = 2011033002;

@@ -52,7 +52,7 @@ if(!class_exists('UEDbase')):
 	    global $CFG;
 
 	    if(!empty($message) && ($forceOutput || !empty($CFG->debug))):
-		error_log('['.__CLASS__.(!empty($title)?" - $title":'')."] $message");
+		error_log('['.static::$_className.(!empty($title)?" - $title":'')."] $message");
 	    endif;
 	}
 	

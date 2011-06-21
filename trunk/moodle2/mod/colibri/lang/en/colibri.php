@@ -11,7 +11,10 @@
 
 $string['name'] = 'Colibri';
 $string['modulename'] = 'Colibri Session';
+$string['pluginname'] = $string['modulename'];
 $string['modulenameplural'] = 'Colibri Sessions';
+$string['pluginadministration'] = 'Colibri Administration';
+
 
 //Capabilities
 $string['colibri:managesession'] = 'Manage Colibri sessions';
@@ -27,6 +30,8 @@ $string['startdatetime'] = 'Session start';
 $string['startdatetime_help'] = 'The time and date when the session will start';
 $string['enddatetime'] = 'Session end';
 $string['enddatetime_help'] = 'The time and date when the session will end';
+$string['duration'] = 'Session duration';
+$string['duration_help'] = 'The time the session will take';
 $string['sessionpin'] = 'Session PIN';
 $string['sessionpin_help'] = 'The session PIN is the code to be entered by the participants to access the session.';
 $string['invalidsessionpin'] = 'Invalid session PIN';
@@ -59,4 +64,9 @@ $string['enddatemustbegreaterthanstartdate'] = 'End date must happen after start
 $string['sessionpinmustbeavalidnumber'] = 'Session Pin must be a valid number';
 $string['moderationpinmustbeavalidnumber'] = 'Moderation Pin must be a valid number';
 $string['dontbelikethatandinvitesomeonetothesession'] = 'Don\'t be like that and allow someone in the session';
+$string['sessiondurationmustbegreaterthanzero'] = 'Duration must be greater than zero';
+$string['sessiondurationmustbeanumber'] = 'Duration must be a number';
 
+$string['DATABASE_INSERT_FAILED'] = 'Database insertion failed';
+$string['DATABASE_UPDATE_FAILED'] = 'Database update failed';
+$string['DATABASE_DELETE_FAILED'] = 'Database deletion failed';

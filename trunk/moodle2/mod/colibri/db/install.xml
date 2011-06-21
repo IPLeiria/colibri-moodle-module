@@ -21,13 +21,11 @@
         <FIELD NAME="creatorid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The identifier of the session creator" PREVIOUS="state" NEXT="timemodified"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The timestamp when the module was modified" PREVIOUS="creatorid" NEXT="intro"/>
         <FIELD NAME="intro" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" COMMENT="The introduction or description of the activity" PREVIOUS="timemodified" NEXT="introformat"/>
-        <FIELD NAME="introformat" TYPE="int" LENGTH="3" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The format of the intro field" PREVIOUS="intro" NEXT="display"/>
-        <FIELD NAME="display" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="introformat" NEXT="displayoptions"/>
-        <FIELD NAME="displayoptions" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="display"/>
+        <FIELD NAME="introformat" TYPE="int" LENGTH="3" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The format of the intro field" PREVIOUS="intro"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="course_fk"/>
-        <KEY NAME="course_fk" TYPE="foreign-unique" FIELDS="course" REFTABLE="course" REFFIELDS="id" COMMENT="The course foreign key" PREVIOUS="primary" NEXT="creatorid_fk"/>
+        <KEY NAME="course_fk" TYPE="foreign" FIELDS="course" REFTABLE="course" REFFIELDS="id" COMMENT="The course foreign key" PREVIOUS="primary" NEXT="creatorid_fk"/>
         <KEY NAME="creatorid_fk" TYPE="foreign" FIELDS="creatorid" REFTABLE="user" REFFIELDS="id" PREVIOUS="course_fk"/>
       </KEYS>
     </TABLE>
