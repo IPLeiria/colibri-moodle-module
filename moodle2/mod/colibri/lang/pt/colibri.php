@@ -9,9 +9,12 @@
  *
  */
 
-$string['name'] = 'Colibri';
+$string['colibri'] = 'Colibri';
+$string['name'] = $string['colibri'];
+$string['mod_colibri'] = $string['colibri'];
 $string['modulename'] = 'Sessão Colibri';
 $string['modulenameplural'] = 'Sessões Colibri';
+$string['pluginadministration'] = 'Administração do Colibri';
 
 
 //Capabilities
@@ -28,6 +31,8 @@ $string['startdatetime'] = 'Início da sessão';
 $string['startdatetime_help'] = 'Data e hora do inicio da sessão';
 $string['enddatetime'] = 'Fim da sessão';
 $string['enddatetime_help'] = 'Data e hora do fim da sessão';
+$string['duration'] = 'Duração da sessão';
+$string['duration_help'] = 'Tempo que a sessão irá demorar';
 $string['sessionpin'] = 'PIN da sessão';
 $string['sessionpin_help'] = 'O PIN da sessão é o código que deve ser introduzido pelos participantes para aceder à sessão. Deve ser composto por 4 dígitos.';
 $string['invalidsessionpin'] = 'PIN de sessão inválido';
@@ -58,5 +63,10 @@ $string['youcannotcreateasessioninthepast'] = 'Não é possível criar uma sess�
 $string['enddatemustbegreaterthanstartdate'] = 'A data de fim deve ser posterior à data de inicio';
 $string['sessionpinmustbeavalidnumber'] = 'O PIN da sessão deve ser um número válido';
 $string['moderationpinmustbeavalidnumber'] = 'O PIN de moderação deve ser um número válido';
-$string['dontbelikethatandinvitesomeonetothesession'] = 'Não seja assim e deixe que alguém possa assistir à sessão';
+$string['dontbelikethatandinvitesomeonetothesession'] = 'Não é possível criar sessões sem especificar o número de utilizadores que participarão na sessão';
+$string['sessiondurationmustbegreaterthanzero'] = 'A duração deve ser maior do que zero';
+$string['sessiondurationmustbeanumber'] = 'A duração deve ser um número';
 
+$string['DATABASE_INSERT_FAILED'] = 'Falhou a inserção na base de dados';
+$string['DATABASE_UPDATE_FAILED'] = 'Falhou a actualização na base de dados';
+$string['DATABASE_DELETE_FAILED'] = 'Falhou a eliminação na base de dados';

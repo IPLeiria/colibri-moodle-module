@@ -19,14 +19,14 @@ require_once(dirname(__FILE__).'/locallib.php');     // we extend this library h
  */
 function colibri_supports($feature) {
     switch($feature) {
-        case FEATURE_GROUPS:                  return false;
-        case FEATURE_GROUPINGS:               return false;
-        case FEATURE_GROUPMEMBERSONLY:        return false;
-        case FEATURE_MOD_INTRO:               return true;
-        case FEATURE_COMPLETION_TRACKS_VIEWS: return false;
-        case FEATURE_GRADE_HAS_GRADE:         return false;
-        case FEATURE_GRADE_OUTCOMES:          return false;
-        case FEATURE_BACKUP_MOODLE2:          return false;
+        case FEATURE_GROUPS:			return true;
+        case FEATURE_GROUPINGS:			return true;
+        case FEATURE_GROUPMEMBERSONLY:		return true;
+        case FEATURE_MOD_INTRO:			return true;
+        case FEATURE_COMPLETION_TRACKS_VIEWS:	return false;
+        case FEATURE_GRADE_HAS_GRADE:		return false;
+        case FEATURE_GRADE_OUTCOMES:		return false;
+        case FEATURE_BACKUP_MOODLE2:		return false;
 
         default: return null;
     }
@@ -66,86 +66,64 @@ function colibri_get_post_actions() {
 }
 
 /**
- * Add colibri instance.
+ * Insert a colibri instance.
  * 
  * @param object $data
  * @param object $mform
  * @return int new resoruce instance id
  */
 function colibri_add_instance($data) {
-    global $CFG, $DB, $USER;
-    
+    global $USER;
+
     $data->id = Colibri::createSession(
 	$USER->id,
 	$data->course,
 	new sessionScheduleInfo(
 	    $data->name,
 	    $data->startdatetime,
-	    $data->enddatetime,
+	    $data->startdatetime+$data->duration,
+	    $data->maxsessionusers,
+	    $data->sessionpin,
+	    $data->moderationpin,
+	    $data->publicsession==0?false:true
+	),
+	$data->authorizedsessionusers_values,
+	$data->intro,
+	$data->introformat
+    );
+    if($data->id>0):
+	return $data->id;
+    else:
+	return false;
+    endif;
+}
+
+/**
+ * Update a colibri instance.
+ * @param object $data
+ * @param object $mform
+ * @return bool true
+ */
+function colibri_update_instance($data, $mform) {
+    global $USER;
+
+    return Colibri::modifySession(
+	$USER->id,
+	$data->instance,
+	new sessionScheduleInfo(
+	    $data->name,
+	    $data->startdatetime,
+	    $data->startdatetime+$data->duration,
 	    $data->maxsessionusers,
 	    $data->sessionpin,
 	    $data->moderationpin,
 	    $data->publicsession==0?false:true,
 	    $data
 	),
+	$data->authorizedsessionusers_values,
 	$data->intro,
 	$data->introformat
     );
-    if($data->id>0):
-	// we need to use context now, so we need to make sure all needed info is already in db
-	//$DB->set_field('course_modules', 'instance', $data->id, array('id'=>$data->coursemodule));
-	echo('<pre>'.print_r($data, true).'</pre>');
-	
-    endif;
-    return $data->id;
-}
-
-/**
- * Update colibri instance.
- * @param object $data
- * @param object $mform
- * @return bool true
- */
-function colibri_update_instance($data, $mform) {
-    global $CFG, $DB;
-    
-    if(isset($data->submitbutton) || isset($data->submitbutton2)){
-    	
-    	require_once("$CFG->libdir/resourcelib.php");
-	    $data->timemodified = time();
-	    $data->id           = $data->instance;
-	    $data->revision++;
-	
-	    $displayoptions = array();
-	    if (isset($data->display) && $data->display == RESOURCELIB_DISPLAY_POPUP) {
-	        $displayoptions['popupwidth']  = $data->popupwidth;
-	        $displayoptions['popupheight'] = $data->popupheight;
-	    }
-	    if (isset($data->display) && in_array($data->display, array(RESOURCELIB_DISPLAY_AUTO, RESOURCELIB_DISPLAY_EMBED, RESOURCELIB_DISPLAY_FRAME))) {
-	        $displayoptions['printheading'] = (int)!empty($data->printheading);
-	        $displayoptions['printintro']   = (int)!empty($data->printintro);
-	    }
-	    $data->displayoptions = serialize($displayoptions);
-	    
-	    
-	    $eventdata = new stdClass();
-	    
-	    // cache and delete the old records
-	    $previousColibriRelations = $DB->get_records('colibri_relations', array('colibri_id'=>$data->instance));
-	    if($DB->delete_records('colibri_relations', array('colibri_id'=>$data->instance))){
-	    	$eventdata->previousColibriRelations = $previousColibriRelations;
-	    	if($DB->update_record('colibri', $data)){
-		    	if(colibri_add_relations_to_db($data, $eventdata)){
-			    	events_trigger('colibri_updated', $eventdata);
-			    	colibri_set_mainfile($data);
-	    			
-	    			return true;
-			    }
-	    	}
-	    }
-    	return false;
-    }
-    return true;
 }
 
 /**
@@ -154,33 +132,9 @@ function colibri_update_instance($data, $mform) {
  * @return boolean true on success, false otherwise
  */
 function colibri_delete_instance($id) {
-    global $DB;
+    global $USER;
     
-    $eventdata = new stdClass();
-    if(($eventdata->previousColibriRelations = $DB->get_records('colibri_relations', array('colibri_id'=>$id))) && $DB->delete_records('colibri_relations', array('colibri_id'=>$id))){
-    	if($DB->delete_records('colibri', array('id'=>$id))){
-    		events_trigger('colibri_deleted', $eventdata);
-    		return true;
-    	}
-    }
-    return false;
-}
-
-/**
- * Handles the associated resources deletion triggering the update on the central repository
- * 
- * @param object $eventdata with the module data
- * @return boolean with the result of the operation
- */
-function colibri_mod_deleted_handler($eventdata){
-	global $DB;
-	
-	if(($previousColibriRelations = $DB->get_records('colibri_relations', array('resource_id'=>$eventdata->cmid))) && $DB->delete_records('colibri_relations', array('resource_id'=>$eventdata->cmid))){
-		$eventdata = new stdClass();
-		$eventdata->previousColibriRelations = $previousColibriRelations;
-		events_trigger('colibri_deleted', $eventdata);
-	}
-	return true;
+    return Colibri::removeSession($USER->id, $id);
 }
 
 /**
@@ -234,47 +188,33 @@ function colibri_user_complete($course, $user, $mod, $resource) {
     }
 }
 
+
 /**
- * Returns the users with data in one colibri
+ * Returns the users with data in one resource
  *
- * @param int $resourceid
- * @return bool false
+ * @param int $sessionId
  */
-function colibri_get_participants($resourceid) {
-    return false;
+function colibri_get_participants($sessionId) {
+    global $DB;
+
+    $users = array();
+    $usersTmp = Colibri::getSessionUsers($sessionId);
+    foreach ($usersTmp as $user) {
+        if (empty($users[$user->userid])) {
+            $users[$user->userid] = $user->userid;
+        }
+    }
+
+    return $users;
 }
 
 /**
- * Given a course_module object, this function returns any
- * "extra" information that may be needed when printing
- * this activity in a course listing.
- *
- * See {@link get_array_of_activities()} in course/lib.php
- *
- * @param object $coursemodule
- * @return object info
+ * Adds information about unread messages, that is only required for the course view page (and similar), to the course-module object.
+ * @param cm_info $cm Course-module object
  */
-function colibri_get_coursemodule_info($coursemodule) {
-    global $CFG, $DB;
-    require_once("$CFG->libdir/resourcelib.php");
-
-    if (!$page = $DB->get_record('colibri', array('id'=>$coursemodule->instance), 'id, name, display ,displayoptions')) {
-        return NULL;
-    }
-
-    $info = new object();
-    $info->name = $page->name;
-
-    if ($page->display != RESOURCELIB_DISPLAY_POPUP) {
-        return $info;
-    }
-
-    $fullurl = "$CFG->wwwroot/mod/colibri/view.php?id=$coursemodule->id";
-    $options = empty($page->displayoptions) ? array() : unserialize($page->displayoptions);
-    $width  = empty($options['popupwidth'])  ? 620 : $options['popupwidth'];
-    $height = empty($options['popupheight']) ? 450 : $options['popupheight'];
-    $wh = "width=$width,height=$height,toolbar=no,location=no,menubar=no,copyhistory=no,status=no,directories=no,scrollbars=yes,resievents_trigger('colibri_deleted', $eventdata);zable=yes";
-    $info->extra = "onclick=\"window.open('$fullurl', '', '$wh'); return false;\"";
-
-    return $info;
+function colibri_cm_info_view(cm_info $cm) {
+    global $CFG;
+    $session = Colibri::getSessionInfo($cm->instance);
+    $out = "<span class=\"colibri-session-info\">&nbsp;estado {$session->sessionStatus}</span>";
+    $cm->set_after_link($out);
 }
