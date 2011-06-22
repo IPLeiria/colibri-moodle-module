@@ -89,6 +89,46 @@ if(!class_exists('Colibri')):
 	}
 
 	/**
+	 * Verify if an user as access to a specific session using a free or reserved seat
+	 *
+	 * @param <integer> $resourceId with the session resource identifier
+	 * @param <integer> $userId with the user identifier
+	 * @return <boolean> true if the user has a reserved seat or a free seat, false otherwise
+	 * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
+	 */
+	public static function hasUserAccessToSession($resourceId, $userId){
+	    global $DB;
+	    if($DB->record_exists('colibri_users', array('colibrisessionid'=>$resourceId, 'userid'=>$userId)) || $DB->count_records('colibri_users', array('colibrisessionid'=>$resourceId))<$DB->get_field('colibri', 'maxsessionusers', array('id'=>$resourceId))):
+		return true;
+	    endif;
+	    return false;
+	}
+
+	/**
+	 * Verify if an user as access to a specific session using a free or reserved seat
+	 *
+	 * @param <integer> $resourceId with the session resource identifier
+	 * @param <integer> $userId with the user identifier
+	 * @return <boolean> true if the user has a reserved seat or a free seat, false otherwise
+	 * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
+	 */
+	public static function reserveSeatForUserInSession($resourceId, $userId){
+	    global $DB;
+	    if(self::hasUserAccessToSession($resourceId, $userId)):
+		if($DB->record_exists('colibri_users', array('colibrisessionid'=>$resourceId, 'userid'=>$userId))):
+		    return true;
+		endif;
+		$dbUser = new stdClass();
+		$dbUser->colibrisessionid = $resourceId;
+		$dbUser->userid = $userId;
+		$dbUser->type = 0;
+		$dbUser->reservedbyid = $userId;
+		return $DB->insert_record('colibri_users', $dbUser, false);
+	    endif;
+	    return false;
+	}
+
+	/**
 	 * Creates a session on the system
 	 *
 	 * @param <int> $userId the moodle user identifier

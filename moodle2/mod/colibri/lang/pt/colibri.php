@@ -70,3 +70,13 @@ $string['sessiondurationmustbeanumber'] = 'A duração deve ser um número';
 $string['DATABASE_INSERT_FAILED'] = 'Falhou a inserção na base de dados';
 $string['DATABASE_UPDATE_FAILED'] = 'Falhou a actualização na base de dados';
 $string['DATABASE_DELETE_FAILED'] = 'Falhou a eliminação na base de dados';
+
+$string['sessionscheduletostart'] = ' (agendada)';
+$string['sessionscheduletostart_title'] = 'Sessão agendada para {$a->weekday}, {$a->mday} de {$a->month} de {$a->year} às {$a->hours}:{$a->minutes}';
+$string['sessionstartedxparticipantsinsession'] = ' (a decorrer)';
+$string['sessionstartedxparticipantsinsession_title'] = 'Em sessão com {$a} participantes';
+$string['sessionfinished'] = '';
+$string['sessionfinished_title'] = '';
+
+$string['invalidcolibriid'] = 'O idenficador do recurso Colibri é inválido';
+$string['unabletogetthesessionstate'] = 'Não foi possível obter o estado da sessão';

@@ -23,8 +23,8 @@ function colibri_supports($feature) {
         case FEATURE_GROUPINGS:			return true;
         case FEATURE_GROUPMEMBERSONLY:		return true;
         case FEATURE_MOD_INTRO:			return true;
-        case FEATURE_COMPLETION_TRACKS_VIEWS:	return false;
-        case FEATURE_GRADE_HAS_GRADE:		return false;
+        case FEATURE_COMPLETION_TRACKS_VIEWS:	return true;
+        case FEATURE_GRADE_HAS_GRADE:		return true;
         case FEATURE_GRADE_OUTCOMES:		return false;
         case FEATURE_BACKUP_MOODLE2:		return false;
 
@@ -215,6 +215,22 @@ function colibri_get_participants($sessionId) {
 function colibri_cm_info_view(cm_info $cm) {
     global $CFG;
     $session = Colibri::getSessionInfo($cm->instance);
-    $out = "<span class=\"colibri-session-info\">&nbsp;estado {$session->sessionStatus}</span>";
+    $status = '';
+    $title = '';
+    switch($session->sessionStatus):
+	case sessionResult::SESSION_STATUS_SCHEDULED:
+	    $status = get_string('sessionscheduletostart', 'colibri');
+	    $title = get_string('sessionscheduletostart_title', 'colibri', usergetdate($session->startDateTimeStamp/1000));
+	    break;
+	case sessionResult::SESSION_STATUS_INSESSION:
+	    $status = get_string('sessionstartedxparticipantsinsession', 'colibri');
+	    $title = get_string('sessionstartedxparticipantsinsession_title', 'colibri', $session->currentUsersInSession);
+	    break;
+	case sessionResult::SESSION_STATUS_FINISHED:
+	    $status = get_string('sessionfinished', 'colibri');
+	    $title = get_string('sessionfinished_title', 'colibri');
+	    break;
+    endswitch;
+    $out = "<span class=\"colibri-session-info\" title=\"{$title}\">{$status}</span>";
     $cm->set_after_link($out);
 }

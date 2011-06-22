@@ -70,3 +70,13 @@ $string['sessiondurationmustbeanumber'] = 'Duration must be a number';
 $string['DATABASE_INSERT_FAILED'] = 'Database insertion failed';
 $string['DATABASE_UPDATE_FAILED'] = 'Database update failed';
 $string['DATABASE_DELETE_FAILED'] = 'Database deletion failed';
+
+$string['sessionscheduletostart'] = ' (scheduled)';
+$string['sessionscheduletostart_title'] = 'Schedule to start at {$a->weekday}, {$a->month} {$a->mday}, {$a->year} at {$a->hours}:{$a->minutes}';
+$string['sessionstartedxparticipantsinsession'] = ' (started)';
+$string['sessionstartedxparticipantsinsession_title'] = '{$a} participants in the session';
+$string['sessionfinished'] = '';
+$string['sessionfinished_title'] = '';
+
+$string['invalidcolibriid'] = 'The Colibri session resource identifier is invalid';
+$string['unabletogetthesessionstate'] = 'Unable to get the session state';
