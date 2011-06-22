@@ -1,6 +1,10 @@
 <?php
 
 class sessionResult{
+    //session status constants
+    const SESSION_STATUS_SCHEDULED = 0;
+    const SESSION_STATUS_INSESSION = 3; //1?
+    const SESSION_STATUS_FINISHED = 2;
     /**
      * @var int
      */
