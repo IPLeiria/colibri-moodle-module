@@ -38,6 +38,12 @@ class colibri_setup_form extends moodleform {
         $mform->setDefault('colibri_wsdl_url', (isset($config->colibri_wsdl_url)?$config->colibri_wsdl_url:'https://webconference.fccn.pt/colibri/ColibriService?wsdl'));
         $mform->addHelpButton('colibri_wsdl_url', 'colibriWsdlUrl', COLIBRI_PLUGINNAME);
 
+        $mform->addElement('text', 'colibri_direct_access_url', get_string('colibriDirectAccessUrl', COLIBRI_PLUGINNAME), array('size'=>'250'));
+        $mform->setType('colibri_direct_access_url', PARAM_URL);
+        $mform->addRule('colibri_direct_access_url', get_string('emptyColibriDirectAccessUrl', COLIBRI_PLUGINNAME), 'required', null);
+        $mform->setDefault('colibri_direct_access_url', (isset($config->colibri_direct_access_url)?$config->colibri_direct_access_url:'https://webconference.fccn.pt/colibri/mod/direct_access.jsp'));
+        $mform->addHelpButton('colibri_direct_access_url', 'colibriDirectAccessUrl', COLIBRI_PLUGINNAME);
+
         // Instance settings
         $mform->addElement('header', 'instancesettings', get_string('instanceSettings', COLIBRI_PLUGINNAME));
 
@@ -50,6 +56,16 @@ class colibri_setup_form extends moodleform {
         $mform->addRule('colibri_installation_password', get_string('colibriEmptyInstallationPassword', COLIBRI_PLUGINNAME), 'required', null);
         $mform->setDefault('colibri_installation_password', (isset($config->colibri_installation_password)?$config->colibri_installation_password:''));
         $mform->addHelpButton('colibri_installation_password', 'colibriInstallationPassword', COLIBRI_PLUGINNAME);
+
+	$updateMethods = array(
+	    ColibriService::LIVE_INFORMATION_METHOD=>get_string('live', COLIBRI_PLUGINNAME),
+	    ColibriService::CRON_INFORMATION_METHOD=>get_string('cron', COLIBRI_PLUGINNAME),
+	    ColibriService::LOCAL_INFORMATION_METHOD=>get_string('local', COLIBRI_PLUGINNAME)
+	);
+	$mform->addElement('select', 'session_information_update_method', get_string('sessioninformationupdatemethod', COLIBRI_PLUGINNAME), $updateMethods);
+        $mform->addHelpButton('session_information_update_method', 'sessioninformationupdatemethod', COLIBRI_PLUGINNAME);
+	$mform->setAdvanced('session_information_update_method');
+        $mform->setDefault('session_information_update_method', (isset($config->session_information_update_method)?$config->session_information_update_method:ColibriService::LIVE_UPDATE_METHOD));
 
         $this->add_action_buttons(false, get_string('save', COLIBRI_PLUGINNAME));
     }

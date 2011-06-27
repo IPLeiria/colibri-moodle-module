@@ -223,6 +223,7 @@ function colibri_cm_info_view(cm_info $cm) {
 	    $title = get_string('sessionscheduletostart_title', 'colibri', usergetdate($session->startDateTimeStamp/1000));
 	    break;
 	case sessionResult::SESSION_STATUS_INSESSION:
+	    $session = Colibri::getSessionInfo($cm->instance, true);
 	    $status = get_string('sessionstartedxparticipantsinsession', 'colibri');
 	    $title = get_string('sessionstartedxparticipantsinsession_title', 'colibri', $session->currentUsersInSession);
 	    break;
@@ -233,4 +234,13 @@ function colibri_cm_info_view(cm_info $cm) {
     endswitch;
     $out = "<span class=\"colibri-session-info\" title=\"{$title}\">{$status}</span>";
     $cm->set_after_link($out);
+}
+
+
+function colibri_cron(){
+    if(Colibri::syncSessionsInformation()):
+	mtrace('Colibri session information successfuly synced');
+    endif;
+    
+    return true;
 }

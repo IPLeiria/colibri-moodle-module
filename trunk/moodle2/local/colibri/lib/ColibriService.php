@@ -44,6 +44,10 @@ if(!class_exists('ColibriService')):
 	const COULD_NOT_REMOVE_SESSION = -17;
 	const INVALID_NAME = -18;
 
+	const LIVE_INFORMATION_METHOD = 0;
+	const CRON_INFORMATION_METHOD = 1;
+	const LOCAL_INFORMATION_METHOD = 2;
+
 	/**
 	 * @var <string> with the class name
 	 */
@@ -83,15 +87,18 @@ if(!class_exists('ColibriService')):
 		self::$_soapClient = NULL;
 		self::$_accessCredentials = new accessCredentials();
 
+		$config = get_config(COLIBRI_PLUGINNAME);
+
 		// Get the WSDL url from the module configuration
 		if(is_null($wsdl)):
-		    if(!($wsdl = get_config(COLIBRI_PLUGINNAME, 'colibri_wsdl_url'))):
+		    if(!isset($config->colibri_wsdl_url)):
 			throw new Exception(get_string('webServiceLinkFailed', COLIBRI_PLUGINNAME));
 		    endif;
+		    $wsdl = $config->colibri_wsdl_url;
 		endif;
 
 		// cache the credentials
-		self::$_accessCredentials = new accessCredentials(get_config(COLIBRI_PLUGINNAME, 'colibri_installation_identifier'), get_config(COLIBRI_PLUGINNAME, 'colibri_installation_password'));
+		self::$_accessCredentials = new accessCredentials($config->colibri_installation_identifier, $config->colibri_installation_password);
 
 		// Enable trace
 		$options = array('trace' => true);
@@ -628,6 +635,28 @@ if(!class_exists('ColibriService')):
 		return self::EXCEPTION;
 	    }
 	    return self::GENERIC_ERROR;
+	}
+
+	/**
+	 * The URL to direct access to the session
+	 *
+	 * @return 
+	 * @author Cláudio Esperança <claudio.esperanca@ipleiria.pt>
+	 */
+	public static function getSessionUrl($sessionId, $moderationPin, $userId, $username){
+	    $config = get_config(COLIBRI_PLUGINNAME);
+	    if( is_numeric($sessionId)&& $sessionId>0 &&
+		!empty($moderationPin) &&
+		!empty($userId) &&
+		!empty($username) &&
+		isset($config->colibri_installation_identifier) &&
+		isset($config->colibri_installation_password) &&
+		isset($config->colibri_direct_access_url) &&
+		$time = self::getColibriTime()):
+		   
+		return "{$config->colibri_direct_access_url}?SID={$sessionId}&ID={$userId}&USER={$username}&INSTALLID={$config->colibri_installation_identifier}&TIME={$time}&KEY=".md5("{$config->colibri_installation_password}-{$moderationPin}-{$sessionId}-{$username}-{$userId}-{$config->colibri_installation_identifier}-{$time}");
+	    endif;
+	    return NULL;
 	}
     }
 endif;
