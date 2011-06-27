@@ -41,13 +41,20 @@ if ($data):
         if(isset($data->colibri_wsdl_url)):
             set_config('colibri_wsdl_url', $data->colibri_wsdl_url, COLIBRI_PLUGINNAME);
         endif;
+        if(isset($data->colibri_direct_access_url)):
+            set_config('colibri_direct_access_url', $data->colibri_direct_access_url, COLIBRI_PLUGINNAME);
+        endif;
         if(isset($data->colibri_installation_identifier)):
             set_config('colibri_installation_identifier', $data->colibri_installation_identifier, COLIBRI_PLUGINNAME);
         endif;
         if(isset($data->colibri_installation_password)):
             set_config('colibri_installation_password', $data->colibri_installation_password, COLIBRI_PLUGINNAME);
         endif;
+        if(isset($data->session_information_update_method)):
+            set_config('session_information_update_method', $data->session_information_update_method, COLIBRI_PLUGINNAME);
+        endif;
 
+	
         echo($OUTPUT->notification(get_string('colibriSettingsSaved', COLIBRI_PLUGINNAME), 'notifysuccess'));
     }catch(Exception $ex){
         echo($OUTPUT->notification(get_string('colibriErrorSavingSettings', COLIBRI_PLUGINNAME, $ex->getMessage()), 'notifyproblem'));

@@ -54,16 +54,18 @@ if(!empty($session) && isset($session->sessionStatus)):
 	    $title = get_string('sessionscheduletostart_title', 'colibri', usergetdate($session->startDateTimeStamp/1000));
 	    echo($title);
 
-	    echo('Server time:<pre>'.print_r(usergetdate(ColibriService::getColibriTime()/1000), true).'</pre>');
-
 	    echo($OUTPUT->footer($course));
 	    break;
 	case sessionResult::SESSION_STATUS_INSESSION:
 	    if(Colibri::reserveSeatForUserInSession($colibri->id, $USER->id)):
 		$completion=new completion_info($course);
 		$completion->set_module_viewed($cm);
-		
-		redirect('https://dev.colibri.fccn.pt/colibri/public/mainPortal.jsp', get_string('redirectingtothesession', 'colibri'), 3);
+
+		if(Colibri::hasUserSessionAdminPriviligies($colibri->id, $USER->id)):
+		    redirect(Colibri::getSessionUrl($colibri->id, $USER), get_string('redirectingtothesessionasmoderator', 'colibri', $session->moderationPin), 15);
+		else:
+		    redirect(Colibri::getSessionUrl($colibri->id, $USER), get_string('redirectingtothesession', 'colibri'), 3);
+		endif;
 	    else:
 		echo(get_string('unabletoaccessthesession_allseatstaken', 'colibri'));
 	    endif;
@@ -72,7 +74,8 @@ if(!empty($session) && isset($session->sessionStatus)):
 	case sessionResult::SESSION_STATUS_FINISHED:
 	    echo($OUTPUT->header());
 	    
-	    echo("ended");
+	    echo(get_string('thesessionhasended', 'colibri'));
+	    //@TODO: show the list of recordings
 
 	    echo($OUTPUT->footer($course));
 	    break;

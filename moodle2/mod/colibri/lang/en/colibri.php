@@ -80,3 +80,8 @@ $string['sessionfinished_title'] = '';
 
 $string['invalidcolibriid'] = 'The Colibri session resource identifier is invalid';
 $string['unabletogetthesessionstate'] = 'Unable to get the session state';
+
+$string['thesessionhasended'] = 'The session has ended';
+$string['unabletoaccessthesession_allseatstaken'] = 'Unable to access the session: all the seats are taken.';
+$string['redirectingtothesession'] = 'Redirecting to the Colibri session...';
+$string['redirectingtothesessionasmoderator'] = 'Redirecting to the Colibri session. You can moderate this session by using the moderator PIN {$a} inside the session.';

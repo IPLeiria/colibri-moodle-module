@@ -9,7 +9,7 @@
  *
  */
 
-$module->version  = 2011062100;
+$module->version  = 2011062700;
 $module->requires = 2011033002;  // Requires this Moodle version
-$module->cron     = 0;
+$module->cron     = 3600*24;	 // Run every 24 hours
 
